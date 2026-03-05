@@ -25,8 +25,8 @@ export default function LandingPage() {
 
           <div className="hidden md:flex items-center space-x-8">
             <Link href="#" className="text-xs font-medium text-[#1D1D1F] hover:text-[#0071E3] transition-colors">Overview</Link>
-            <Link href="#" className="text-xs font-medium text-[#86868B] hover:text-[#1D1D1F] transition-colors">Features</Link>
-            <Link href="#" className="text-xs font-medium text-[#86868B] hover:text-[#1D1D1F] transition-colors">Impact</Link>
+            <a href="#features" className="text-xs font-medium text-[#86868B] hover:text-[#1D1D1F] transition-colors">Features</a>
+            <a href="#impact" className="text-xs font-medium text-[#86868B] hover:text-[#1D1D1F] transition-colors">Impact</a>
           </div>
 
           <div className="flex items-center space-x-3">
@@ -85,8 +85,8 @@ export default function LandingPage() {
           </motion.div>
         </div>
 
-        {/* Bento Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[400px] md:auto-rows-[500px]">
+        {/* Features Grid */}
+        <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[400px] md:auto-rows-[450px] scroll-mt-32">
 
           {/* Card 1: ASHA Workers (Large) */}
           <motion.div
@@ -94,29 +94,16 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="md:col-span-2 bg-white rounded-[40px] p-8 relative overflow-hidden group border border-[#E5E5EA]/50 shadow-sm hover:shadow-xl transition-all duration-500"
+            className="md:col-span-2 bg-white rounded-[40px] p-8 md:p-12 relative overflow-hidden group border border-[#E5E5EA]/50 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col justify-center"
           >
-            <div className="relative z-10 h-full flex flex-col justify-between">
-              <div>
-                <div className="w-12 h-12 bg-[#FF3B30]/10 rounded-full flex items-center justify-center mb-4">
-                  <HeartPulse className="w-6 h-6 text-[#FF3B30]" />
-                </div>
-                <h3 className="text-3xl font-semibold text-[#1D1D1F] mb-2">Empowering ASHA Workers</h3>
-                <p className="text-[#86868B] max-w-md">Advanced tools for frontline heroes. AI-assisted triage, digital health records, and instant specialist connection.</p>
+            <div className="relative z-10 max-w-xl">
+              <div className="w-16 h-16 bg-[#FF3B30]/10 rounded-2xl flex items-center justify-center mb-6">
+                <HeartPulse className="w-8 h-8 text-[#FF3B30]" />
               </div>
-              <div className="flex items-center text-[#0071E3] font-medium group-hover:translate-x-2 transition-transform cursor-pointer">
-                View Dashboard <ArrowRight className="w-4 h-4 ml-2" />
-              </div>
+              <h3 className="text-3xl md:text-4xl font-semibold text-[#1D1D1F] mb-4">Empowering ASHA Workers</h3>
+              <p className="text-lg text-[#86868B]">Advanced tools for frontline heroes. AI-assisted triage, digital health records, and instant specialist connection right from the field.</p>
             </div>
-            <div className="absolute top-0 right-0 w-1/2 h-full hidden md:block">
-              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-white z-10" />
-              <Image
-                src="https://picsum.photos/seed/asha_worker_tablet/800/800"
-                alt="ASHA Worker"
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-            </div>
+            <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-gradient-to-tl from-[#FF3B30]/5 to-transparent rounded-full blur-3xl" />
           </motion.div>
 
           {/* Card 2: AI Analysis (Tall) */}
@@ -125,25 +112,16 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="md:row-span-2 bg-black text-white rounded-[40px] p-8 relative overflow-hidden group shadow-2xl"
+            className="md:row-span-2 bg-[#1D1D1F] text-white rounded-[40px] p-8 md:p-12 relative overflow-hidden group shadow-2xl flex flex-col justify-center"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80 z-10" />
-            <Image
-              src="https://picsum.photos/seed/ai_medical_scan/600/1000"
-              alt="AI Analysis"
-              fill
-              className="object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
-            />
-            <div className="relative z-20 h-full flex flex-col justify-end">
-              <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mb-4">
-                <Activity className="w-6 h-6 text-white" />
+            <div className="relative z-20">
+              <div className="w-16 h-16 bg-white/10 shrink-0 rounded-2xl flex items-center justify-center mb-6 border border-white/20">
+                <Activity className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-3xl font-semibold mb-2">AI Diagnostics</h3>
-              <p className="text-white/70 mb-6">Instant symptom analysis and risk prediction powered by Gemini models.</p>
-              <button className="w-full py-3 bg-white text-black rounded-full font-medium hover:bg-white/90 transition-colors">
-                Try Demo
-              </button>
+              <h3 className="text-3xl font-semibold mb-4">AI Diagnostics</h3>
+              <p className="text-lg text-white/70 leading-relaxed">Instant symptom analysis and risk prediction powered by Gemini models, capable of understanding multiple languages including Hindi and Marathi.</p>
             </div>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-[#0071E3]/20 to-transparent rounded-full blur-3xl mix-blend-screen" />
           </motion.div>
 
           {/* Card 3: Teleconsultation */}
@@ -152,16 +130,15 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-[#F5F5F7] rounded-[40px] p-8 relative overflow-hidden group border border-[#E5E5EA] hover:bg-white transition-colors duration-500"
+            className="bg-[#F5F5F7] rounded-[40px] p-8 md:p-12 relative overflow-hidden group border border-[#E5E5EA] hover:bg-white transition-colors duration-500 flex flex-col justify-center"
           >
             <div className="relative z-10">
-              <div className="w-12 h-12 bg-[#34C759]/10 rounded-full flex items-center justify-center mb-4">
-                <Video className="w-6 h-6 text-[#34C759]" />
+              <div className="w-16 h-16 bg-[#34C759]/10 rounded-2xl flex items-center justify-center mb-6">
+                <Video className="w-8 h-8 text-[#34C759]" />
               </div>
-              <h3 className="text-2xl font-semibold text-[#1D1D1F] mb-2">HD Teleconsultation</h3>
-              <p className="text-[#86868B]">Crystal clear video calls optimized for low-bandwidth rural networks.</p>
+              <h3 className="text-3xl font-semibold text-[#1D1D1F] mb-4">Teleconsultation</h3>
+              <p className="text-lg text-[#86868B]">Crystal clear video calls optimized for low-bandwidth rural networks.</p>
             </div>
-            <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-[#34C759]/20 rounded-full blur-3xl group-hover:bg-[#34C759]/30 transition-colors" />
           </motion.div>
 
           {/* Card 4: Offline Mode */}
@@ -170,16 +147,15 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="bg-[#F5F5F7] rounded-[40px] p-8 relative overflow-hidden group border border-[#E5E5EA] hover:bg-white transition-colors duration-500"
+            className="bg-[#F5F5F7] rounded-[40px] p-8 md:p-12 relative overflow-hidden group border border-[#E5E5EA] hover:bg-white transition-colors duration-500 flex flex-col justify-center"
           >
             <div className="relative z-10">
-              <div className="w-12 h-12 bg-[#FF9500]/10 rounded-full flex items-center justify-center mb-4">
-                <Wifi className="w-6 h-6 text-[#FF9500]" />
+              <div className="w-16 h-16 bg-[#FF9500]/10 rounded-2xl flex items-center justify-center mb-6">
+                <Wifi className="w-8 h-8 text-[#FF9500]" />
               </div>
-              <h3 className="text-2xl font-semibold text-[#1D1D1F] mb-2">Offline First</h3>
-              <p className="text-[#86868B]">No internet? No problem. Data syncs automatically when connectivity returns.</p>
+              <h3 className="text-3xl font-semibold text-[#1D1D1F] mb-4">Offline First</h3>
+              <p className="text-lg text-[#86868B]">No internet? No problem. Full diagnosis works completely offline.</p>
             </div>
-            <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-[#FF9500]/20 rounded-full blur-3xl group-hover:bg-[#FF9500]/30 transition-colors" />
           </motion.div>
 
           {/* Card 5: Security */}
@@ -188,25 +164,64 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="md:col-span-2 bg-[#0071E3] text-white rounded-[40px] p-8 relative overflow-hidden group"
+            className="md:col-span-3 bg-[#0071E3] text-white rounded-[40px] p-8 md:p-12 relative overflow-hidden group flex flex-col justify-center min-h-[400px]"
           >
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between h-full">
-              <div className="mb-6 md:mb-0 md:mr-8">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-4">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-3xl font-semibold mb-2">Enterprise Grade Security</h3>
-                <p className="text-white/80 max-w-md">End-to-end encryption for all patient data. Compliant with global healthcare data standards.</p>
+            <div className="relative z-10 max-w-xl">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                <Shield className="w-8 h-8 text-white" />
               </div>
-              <div className="shrink-0">
-                <div className="w-32 h-32 md:w-40 md:h-40 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
-                  <Shield className="w-16 h-16 text-white" />
-                </div>
-              </div>
+              <h3 className="text-3xl md:text-4xl font-semibold mb-4">Enterprise Grade Security</h3>
+              <p className="text-lg text-white/80">End-to-end encryption for all patient data. Fully compliant with global healthcare data standards ensuring privacy.</p>
             </div>
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20" />
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 mix-blend-screen" />
           </motion.div>
 
+        </div>
+
+        {/* Impact Section */}
+        <div id="impact" className="mt-32 mb-24 scroll-mt-32">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-[#1D1D1F] mb-4">Our Impact</h2>
+            <p className="text-[#86868B] text-lg max-w-2xl mx-auto">Transforming healthcare accessibility across rural India.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="bg-white p-8 rounded-[32px] border border-[#E5E5EA]/50 text-center shadow-sm"
+            >
+              <div className="text-5xl font-bold text-[#0071E3] mb-2">50k+</div>
+              <div className="text-[#1D1D1F] font-semibold mb-2">Patients Diagnosed</div>
+              <p className="text-sm text-[#86868B]">Accurate AI-driven initial symptom assessments.</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="bg-white p-8 rounded-[32px] border border-[#E5E5EA]/50 text-center shadow-sm"
+            >
+              <div className="text-5xl font-bold text-[#34C759] mb-2">1,200</div>
+              <div className="text-[#1D1D1F] font-semibold mb-2">ASHA Workers</div>
+              <p className="text-sm text-[#86868B]">Empowered with digital tools and AI assistants.</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="bg-white p-8 rounded-[32px] border border-[#E5E5EA]/50 text-center shadow-sm"
+            >
+              <div className="text-5xl font-bold text-[#FF9500] mb-2">150+</div>
+              <div className="text-[#1D1D1F] font-semibold mb-2">Remote Villages</div>
+              <p className="text-sm text-[#86868B]">Connected to specialized city doctors.</p>
+            </motion.div>
+          </div>
         </div>
 
         {/* Footer */}
