@@ -76,7 +76,7 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center space-x-4"
           >
-            <Link href="/login" className="px-8 py-3 bg-[#0071E3] hover:bg-[#0077ED] text-white rounded-full font-medium transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/25 flex items-center">
+            <Link href="/login" className="px-8 py-3 bg-[#34C759] hover:bg-[#2FB350] text-white rounded-full font-medium transition-all hover:scale-105 active:scale-95 shadow-lg shadow-green-500/25 flex items-center">
               Get Started <ArrowRight className="w-4 h-4 ml-2" />
             </Link>
             <button className="px-8 py-3 bg-white text-[#1D1D1F] rounded-full font-medium border border-[#E5E5EA] hover:bg-[#F5F5F7] transition-all">
@@ -164,7 +164,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="md:col-span-3 bg-[#0071E3] text-white rounded-[40px] p-8 md:p-12 relative overflow-hidden group flex flex-col justify-center min-h-[400px]"
+            className="md:col-span-3 bg-[#34C759] text-white rounded-[40px] p-8 md:p-12 relative overflow-hidden group flex flex-col justify-center min-h-[400px]"
           >
             <div className="relative z-10 max-w-xl">
               <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6 border border-white/10">
