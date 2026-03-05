@@ -15,7 +15,10 @@ import {
   Volume2,
   User,
   ShieldCheck,
-  ClipboardList
+  ClipboardList,
+  Calendar,
+  Bell,
+  CircleAlert
 } from 'lucide-react';
 
 type TriageLevel = 'Low' | 'Medium' | 'High' | 'Critical';
@@ -51,6 +54,8 @@ export default function SymptomAnalysis() {
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [patient, setPatient] = useState<PatientData | null>(null);
+  const [escalated, setEscalated] = useState(false);
+  const [showFollowUp, setShowFollowUp] = useState(false);
 
   useEffect(() => {
     const savedPatient = localStorage.getItem('currentPatient');
@@ -83,8 +88,10 @@ export default function SymptomAnalysis() {
       }
 
       setResult(data as AnalysisResult);
+      setEscalated(false);
+      setShowFollowUp(false);
 
-      // Handle High Risk Alert
+      // Handle High Risk Alert — save alert
       if ((data.triage_level === 'High' || data.triage_level === 'Critical') && patient) {
         const alerts = JSON.parse(localStorage.getItem('followUpAlerts') || '[]');
         const newAlert = {
@@ -96,12 +103,58 @@ export default function SymptomAnalysis() {
         };
         localStorage.setItem('followUpAlerts', JSON.stringify([newAlert, ...alerts]));
       }
+
+      // Auto-escalate High/Critical to doctor dashboard
+      if (data.triage_level === 'High' || data.triage_level === 'Critical') {
+        escalateToDoctor(data as AnalysisResult);
+      }
     } catch (err) {
       console.error("AI Analysis Error:", err);
       setError(err instanceof Error ? err.message : "Failed to analyze symptoms. Please try again.");
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // ── Escalation to Doctor Dashboard ──
+  const escalateToDoctor = (analysisResult: AnalysisResult) => {
+    const escalatedCases = JSON.parse(localStorage.getItem('escalatedCases') || '[]');
+    const newCase = {
+      id: Date.now(),
+      patient: patient ? {
+        fullName: patient.fullName,
+        age: patient.age,
+        gender: patient.gender,
+        phoneNumber: patient.phoneNumber,
+        address: patient.address,
+        pregnancyStatus: patient.pregnancyStatus,
+      } : {
+        fullName: 'Unknown Patient',
+        age: 'N/A',
+        gender: 'N/A',
+      },
+      symptoms: input,
+      analysis: analysisResult,
+      escalatedAt: new Date().toISOString(),
+      status: 'pending',
+    };
+    localStorage.setItem('escalatedCases', JSON.stringify([newCase, ...escalatedCases]));
+    setEscalated(true);
+  };
+
+  const handleScheduleFollowUp = () => {
+    setShowFollowUp(true);
+    // Save follow-up to localStorage
+    const followUps = JSON.parse(localStorage.getItem('scheduledFollowUps') || '[]');
+    const newFollowUp = {
+      id: Date.now(),
+      patient: patient?.fullName || 'Unknown Patient',
+      symptoms: input,
+      triageLevel: result?.triage_level,
+      scheduledDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+      createdAt: new Date().toISOString(),
+    };
+    localStorage.setItem('scheduledFollowUps', JSON.stringify([newFollowUp, ...followUps]));
   };
 
   // ── Web Speech API for voice input ──
@@ -388,17 +441,118 @@ export default function SymptomAnalysis() {
                       </div>
                     </div>
 
-                    <div className="mt-10 pt-8 border-t border-[#E5E5EA]/50 flex flex-col sm:flex-row gap-4">
-                      <button className="flex-1 bg-[#0071E3] text-white py-4 rounded-2xl font-medium hover:bg-[#0077ED] transition-all flex items-center justify-center shadow-lg shadow-blue-500/20">
-                        Escalate to Doctor
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </button>
-                      <button
-                        onClick={() => setResult(null)}
-                        className="flex-1 bg-black/5 text-[#1D1D1F] py-4 rounded-2xl font-medium hover:bg-black/10 transition-all"
-                      >
-                        New Analysis
-                      </button>
+                    {/* ── Triage-based Escalation Section ── */}
+                    <div className="mt-10 pt-8 border-t border-[#E5E5EA]/50">
+
+                      {/* HIGH / CRITICAL — Auto-escalated banner */}
+                      {(result.triage_level === 'High' || result.triage_level === 'Critical') && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="mb-6 bg-gradient-to-r from-[#FF3B30]/10 to-[#FF9500]/10 border border-[#FF3B30]/20 rounded-2xl p-5"
+                        >
+                          <div className="flex items-center mb-2">
+                            <CircleAlert className="w-5 h-5 text-[#FF3B30] mr-2" />
+                            <h4 className="font-bold text-[#FF3B30] text-sm uppercase tracking-wider">Immediate Doctor Attention Required</h4>
+                          </div>
+                          <p className="text-sm text-[#1D1D1F] mb-3">
+                            This case has been <strong>automatically escalated</strong> to the doctor dashboard as <strong>High Priority</strong>.
+                          </p>
+                          <div className="flex items-center text-xs text-[#34C759] font-medium">
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Case sent to Doctor Dashboard • Patient marked as High Priority
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* MEDIUM — Doctor consultation recommended */}
+                      {result.triage_level === 'Medium' && !escalated && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="mb-6 bg-gradient-to-r from-[#FF9500]/10 to-[#FFD60A]/10 border border-[#FF9500]/20 rounded-2xl p-5"
+                        >
+                          <div className="flex items-center mb-2">
+                            <Bell className="w-5 h-5 text-[#FF9500] mr-2" />
+                            <h4 className="font-bold text-[#FF9500] text-sm uppercase tracking-wider">Doctor Consultation Recommended</h4>
+                          </div>
+                          <p className="text-sm text-[#86868B]">
+                            Based on the analysis, a doctor should review this case. Use the buttons below to escalate or schedule follow-up.
+                          </p>
+                        </motion.div>
+                      )}
+
+                      {/* Escalation success message */}
+                      {escalated && result.triage_level === 'Medium' && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mb-6 bg-[#34C759]/10 border border-[#34C759]/20 rounded-2xl p-5"
+                        >
+                          <div className="flex items-center text-[#34C759] font-medium text-sm">
+                            <CheckCircle2 className="w-5 h-5 mr-2" />
+                            Case successfully escalated to Doctor Dashboard with full report.
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Follow-up scheduled message */}
+                      {showFollowUp && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mb-6 bg-[#0071E3]/10 border border-[#0071E3]/20 rounded-2xl p-5"
+                        >
+                          <div className="flex items-center text-[#0071E3] font-medium text-sm">
+                            <Calendar className="w-5 h-5 mr-2" />
+                            Follow-up scheduled for {new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString()}.
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        {/* Escalate button — for Medium risk (manual), hidden if already escalated or High/Critical (auto) */}
+                        {result.triage_level === 'Medium' && !escalated && (
+                          <button
+                            onClick={() => escalateToDoctor(result)}
+                            className="flex-1 bg-[#FF9500] text-white py-4 rounded-2xl font-medium hover:bg-[#E88B00] transition-all flex items-center justify-center shadow-lg shadow-orange-500/20"
+                          >
+                            <Stethoscope className="w-5 h-5 mr-2" />
+                            Escalate to Doctor
+                          </button>
+                        )}
+
+                        {/* Schedule Follow-up — for Medium risk */}
+                        {result.triage_level === 'Medium' && !showFollowUp && (
+                          <button
+                            onClick={handleScheduleFollowUp}
+                            className="flex-1 bg-[#0071E3] text-white py-4 rounded-2xl font-medium hover:bg-[#0077ED] transition-all flex items-center justify-center shadow-lg shadow-blue-500/20"
+                          >
+                            <Calendar className="w-5 h-5 mr-2" />
+                            Schedule Follow-up
+                          </button>
+                        )}
+
+                        {/* View Doctor Dashboard — for High/Critical */}
+                        {(result.triage_level === 'High' || result.triage_level === 'Critical') && (
+                          <button
+                            onClick={() => window.open('/doctor/dashboard', '_blank')}
+                            className="flex-1 bg-[#FF3B30] text-white py-4 rounded-2xl font-medium hover:bg-[#E63529] transition-all flex items-center justify-center shadow-lg shadow-red-500/20"
+                          >
+                            <ArrowRight className="w-5 h-5 mr-2" />
+                            View Doctor Dashboard
+                          </button>
+                        )}
+
+                        {/* New Analysis — always visible */}
+                        <button
+                          onClick={() => { setResult(null); setEscalated(false); setShowFollowUp(false); }}
+                          className="flex-1 bg-black/5 text-[#1D1D1F] py-4 rounded-2xl font-medium hover:bg-black/10 transition-all"
+                        >
+                          New Analysis
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
