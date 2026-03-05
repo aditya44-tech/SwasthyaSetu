@@ -59,7 +59,7 @@ export default function LoginPage() {
         className="w-full max-w-md"
       >
         <div className="glass apple-shadow-lg rounded-[32px] p-10 flex flex-col items-center">
-          <div className="w-16 h-16 bg-[#0071E3] rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-blue-500/20">
+          <div className="w-16 h-16 bg-[#34C759] rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-green-500/20">
             <HeartPulse className="text-white w-8 h-8" />
           </div>
 
@@ -101,8 +101,8 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setRole('asha')}
                 className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${role === 'asha'
-                    ? 'bg-white text-[#1D1D1F] shadow-sm'
-                    : 'text-[#86868B] hover:text-[#1D1D1F]'
+                  ? 'bg-white text-[#1D1D1F] shadow-sm'
+                  : 'text-[#86868B] hover:text-[#1D1D1F]'
                   }`}
               >
                 ASHA Worker
@@ -111,8 +111,8 @@ export default function LoginPage() {
                 type="button"
                 onClick={() => setRole('doctor')}
                 className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${role === 'doctor'
-                    ? 'bg-white text-[#1D1D1F] shadow-sm'
-                    : 'text-[#86868B] hover:text-[#1D1D1F]'
+                  ? 'bg-white text-[#1D1D1F] shadow-sm'
+                  : 'text-[#86868B] hover:text-[#1D1D1F]'
                   }`}
               >
                 Doctor

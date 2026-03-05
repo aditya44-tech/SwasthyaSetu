@@ -10,25 +10,25 @@ export default function LandingPage() {
     <div className="min-h-screen bg-[#F5F5F7] overflow-x-hidden selection:bg-[#0071E3] selection:text-white font-sans">
       {/* Floating Navigation */}
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-3xl px-4">
-        <motion.div 
+        <motion.div
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="bg-white/70 backdrop-blur-xl border border-white/20 shadow-lg rounded-full px-6 py-3 flex items-center justify-between"
         >
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-[#0071E3] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#34C759] rounded-full flex items-center justify-center">
               <HeartPulse className="text-white w-5 h-5" />
             </div>
-            <span className="font-semibold text-sm tracking-tight text-[#1D1D1F]">RuralHealth</span>
+            <span className="font-semibold text-sm tracking-tight text-[#1D1D1F]">SwasthyaSetu</span>
           </div>
-          
+
           <div className="hidden md:flex items-center space-x-8">
             <Link href="#" className="text-xs font-medium text-[#1D1D1F] hover:text-[#0071E3] transition-colors">Overview</Link>
             <Link href="#" className="text-xs font-medium text-[#86868B] hover:text-[#1D1D1F] transition-colors">Features</Link>
             <Link href="#" className="text-xs font-medium text-[#86868B] hover:text-[#1D1D1F] transition-colors">Impact</Link>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <Link href="/login" className="px-4 py-1.5 bg-[#1D1D1F] text-white text-xs font-medium rounded-full hover:bg-black transition-colors">
               Sign In
@@ -50,18 +50,18 @@ export default function LandingPage() {
               New Standard
             </span>
           </motion.div>
-          
-          <motion.h1 
+
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="text-5xl md:text-7xl lg:text-8xl font-semibold tracking-tight text-[#1D1D1F] mb-6 max-w-4xl"
           >
-            Healthcare.<br/>
+            Healthcare.<br />
             <span className="text-[#86868B]">Reimagined.</span>
           </motion.h1>
-          
-          <motion.p 
+
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
@@ -87,9 +87,9 @@ export default function LandingPage() {
 
         {/* Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[400px] md:auto-rows-[500px]">
-          
+
           {/* Card 1: ASHA Workers (Large) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -109,18 +109,18 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="absolute top-0 right-0 w-1/2 h-full hidden md:block">
-               <div className="absolute inset-0 bg-gradient-to-l from-transparent to-white z-10" />
-               <Image 
-                src="https://picsum.photos/seed/asha_worker_tablet/800/800" 
-                alt="ASHA Worker" 
-                fill 
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent to-white z-10" />
+              <Image
+                src="https://picsum.photos/seed/asha_worker_tablet/800/800"
+                alt="ASHA Worker"
+                fill
                 className="object-cover group-hover:scale-105 transition-transform duration-700"
               />
             </div>
           </motion.div>
 
           {/* Card 2: AI Analysis (Tall) */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -128,10 +128,10 @@ export default function LandingPage() {
             className="md:row-span-2 bg-black text-white rounded-[40px] p-8 relative overflow-hidden group shadow-2xl"
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80 z-10" />
-            <Image 
-              src="https://picsum.photos/seed/ai_medical_scan/600/1000" 
-              alt="AI Analysis" 
-              fill 
+            <Image
+              src="https://picsum.photos/seed/ai_medical_scan/600/1000"
+              alt="AI Analysis"
+              fill
               className="object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
             />
             <div className="relative z-20 h-full flex flex-col justify-end">
@@ -147,7 +147,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Card 3: Teleconsultation */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -165,7 +165,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Card 4: Offline Mode */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -183,7 +183,7 @@ export default function LandingPage() {
           </motion.div>
 
           {/* Card 5: Security */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -199,9 +199,9 @@ export default function LandingPage() {
                 <p className="text-white/80 max-w-md">End-to-end encryption for all patient data. Compliant with global healthcare data standards.</p>
               </div>
               <div className="shrink-0">
-                 <div className="w-32 h-32 md:w-40 md:h-40 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
-                    <Shield className="w-16 h-16 text-white" />
-                 </div>
+                <div className="w-32 h-32 md:w-40 md:h-40 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
+                  <Shield className="w-16 h-16 text-white" />
+                </div>
               </div>
             </div>
             <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20" />
@@ -213,10 +213,10 @@ export default function LandingPage() {
         <footer className="mt-24 border-t border-[#E5E5EA] pt-12 pb-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-6 h-6 bg-[#1D1D1F] rounded-full flex items-center justify-center">
+              <div className="w-6 h-6 bg-[#34C759] rounded-full flex items-center justify-center">
                 <HeartPulse className="text-white w-3 h-3" />
               </div>
-              <span className="font-semibold text-sm text-[#1D1D1F]">RuralHealth Platform</span>
+              <span className="font-semibold text-sm text-[#1D1D1F]">SwasthyaSetu Platform</span>
             </div>
             <div className="flex space-x-6 text-xs text-[#86868B]">
               <a href="#" className="hover:text-[#1D1D1F] transition-colors">Privacy Policy</a>
@@ -225,7 +225,7 @@ export default function LandingPage() {
             </div>
           </div>
           <p className="text-center text-[10px] text-[#86868B] mt-8">
-            © 2024 Rural Health Platform. All rights reserved. Designed with care.
+            © 2024 SwasthyaSetu Platform. All rights reserved. Designed with care.
           </p>
         </footer>
       </main>

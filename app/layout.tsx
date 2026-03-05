@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Rural Health Platform',
+  title: 'SwasthyaSetu Platform',
   description: 'AI-powered rural healthcare platform',
 };
 

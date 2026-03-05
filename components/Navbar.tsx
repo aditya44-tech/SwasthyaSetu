@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Menu, X, Home, User, Users, Activity, AlertTriangle, Stethoscope, UserPlus } from 'lucide-react';
+import { Search, Menu, X, Home, User, Users, Activity, AlertTriangle, Stethoscope, UserPlus, HeartPulse } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import DefaultAvatar from './DefaultAvatar';
@@ -47,6 +47,9 @@ export default function Navbar({ title, userRole, userName }: NavbarProps) {
               >
                 <Menu className="w-5 h-5" />
               </button>
+              <div className="w-8 h-8 bg-[#34C759] rounded-full flex items-center justify-center mr-3">
+                <HeartPulse className="text-white w-5 h-5" />
+              </div>
               <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
             </div>
 
@@ -89,8 +92,8 @@ export default function Navbar({ title, userRole, userName }: NavbarProps) {
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-[#E5E5EA]/50">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0071E3] to-[#34C759] flex items-center justify-center">
-                  <Stethoscope className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-full bg-[#34C759] flex items-center justify-center">
+                  <HeartPulse className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-semibold text-[#1D1D1F] tracking-tight">SwasthyaSetu</span>
               </div>
