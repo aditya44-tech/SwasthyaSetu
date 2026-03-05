@@ -328,28 +328,34 @@ export function analyzeSymptoms(
     // Determine severity modifiers from input
     let severityBoost = 0;
     if (/3 day|three day|teen din|4 day|four day|5 day|panch din|hafte|week/i.test(normalizedInput)) {
-        severityBoost += 1; // Duration increases severity
+        severityBoost += 0.5; // Duration slightly increases severity
     }
-    if (/bahut|very|severe|tez|extreme|unbearable|bardasht/i.test(normalizedInput)) {
-        severityBoost += 1; // Severity keywords
+    if (/bahut|very severe|extreme|unbearable|bardasht nahi|bahut zyada/i.test(normalizedInput)) {
+        severityBoost += 1; // Only strong severity keywords boost
+    } else if (/severe|tez|bahut|very/i.test(normalizedInput)) {
+        severityBoost += 0.5; // Mild severity keywords boost less
     }
-    if (/child|baby|bachcha|infant|newborn|elderly|buddha|buzurg/i.test(normalizedInput)) {
-        severityBoost += 1; // Vulnerable populations
+    if (/child|baby|bachcha|infant|newborn/i.test(normalizedInput)) {
+        severityBoost += 0.5; // Children get a small boost
+    }
+    if (/elderly|buddha|buzurg/i.test(normalizedInput)) {
+        severityBoost += 0.5; // Elderly get a small boost
     }
     if (/blood|khoon|bleeding/i.test(normalizedInput)) {
         severityBoost += 1; // Bleeding is always concerning
     }
 
-    // Age-based severity
+    // Age-based severity — only for very young or very old
     const ageNum = parseInt(patient.age || '30');
-    if (ageNum < 5 || ageNum > 65) severityBoost += 1;
+    if (ageNum < 2) severityBoost += 1;
+    else if (ageNum > 75) severityBoost += 0.5;
 
-    // If no symptoms matched, provide a generic response
+    // If no symptoms matched, provide a generic LOW response
     if (matchedSymptoms.length === 0) {
         return {
             symptoms_en: `Patient reports: "${input}". Unable to identify specific symptoms from the description. A medical professional should evaluate.`,
             analysis: 'The symptoms described could not be precisely matched to known conditions in our database. This does not mean the symptoms are not significant. A qualified medical professional should evaluate the patient in person for proper diagnosis.',
-            triage_level: 'Medium',
+            triage_level: 'Low',
             risk_factors: ['Unidentified symptoms require professional evaluation', 'Could be a condition not covered by keyword matching'],
             recommended_actions: [
                 'Refer patient to the nearest Primary Health Centre (PHC)',
@@ -359,7 +365,7 @@ export function analyzeSymptoms(
             ],
             suggested_specialty: 'General Medicine',
             possible_conditions: ['Requires professional diagnosis'],
-            recommended_action_summary: 'Visit PHC for evaluation',
+            recommended_action_summary: 'Home care with monitoring, visit PHC if needed',
             eligible_schemes: HEALTH_SCHEMES.filter(s => s.match(normalizedInput, patient)).map(s => ({
                 name: s.name,
                 description: s.description,
@@ -368,9 +374,11 @@ export function analyzeSymptoms(
     }
 
     // Aggregate results from all matched symptoms
+    // Cap the boost at +1 max — prevents normal symptoms from jumping to High/Critical
+    const effectiveBoost = Math.min(Math.floor(severityBoost), 1);
     const maxSeverity = Math.min(
         4,
-        Math.max(...matchedSymptoms.map(s => s.severity)) + Math.min(severityBoost, 2)
+        Math.max(...matchedSymptoms.map(s => s.severity)) + effectiveBoost
     );
 
     const triageLevels: TriageLevel[] = ['Low', 'Medium', 'High', 'Critical'];
