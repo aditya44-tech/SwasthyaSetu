@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-apple-bg: #F5F5F7;
+  --color-apple-card: #FFFFFF;
+  --color-apple-text: #1D1D1F;
+  --color-apple-text-muted: #86868B;
+  --color-apple-blue: #0071E3;
+  --color-apple-blue-hover: #0077ED;
+  --color-apple-red: #FF3B30;
+  --color-apple-red-soft: #FFF2F2;
+  --color-apple-green: #34C759;
+  --color-apple-green-soft: #F2FDF4;
+  --color-apple-orange: #FF9500;
+  --color-apple-orange-soft: #FFF8F0;
+  --color-apple-border: #E5E5EA;
+  
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+body {
+  background-color: var(--color-apple-bg);
+  color: var(--color-apple-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Soft shadow utility */
+.apple-shadow {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+}
+
+.apple-shadow-lg {
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.08);
+}
+
+/* Hide scrollbar for horizontal scrolling */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Rural Health Platform",
+  "description": "An AI-powered rural healthcare platform with an Apple-inspired design aesthetic, connecting ASHA workers with doctors in real-time.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera",
+    "geolocation"
+  ]
+}
