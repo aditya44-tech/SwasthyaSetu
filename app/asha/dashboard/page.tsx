@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { AlertCircle, Calendar, ChevronRight, Stethoscope, Bell, UserPlus } from 'lucide-react';
+import { AlertCircle, Calendar, ChevronRight, Bell, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,7 @@ export default function AshaDashboard() {
   const [patients, setPatients] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState('ASHA Worker');
+
 
   useEffect(() => {
     // Load user name from session
@@ -115,15 +116,6 @@ export default function AshaDashboard() {
             <h2 className="text-3xl font-semibold tracking-tight mb-1">Hello, {userName}</h2>
             <p className="text-[#86868B]">Here is your schedule for today.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/asha/register"
-              className="flex items-center px-6 py-2.5 bg-[#0071E3] text-white rounded-full text-sm font-medium hover:bg-[#0077ED] transition-colors apple-shadow"
-            >
-              <Stethoscope className="w-4 h-4 mr-2" />
-              Register New Patient
-            </Link>
-          </div>
         </motion.div>
 
         {/* ── Stat Cards ── */}
@@ -133,25 +125,27 @@ export default function AshaDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-gradient-to-br from-[#FFF2F2] to-white rounded-[24px] p-6 apple-shadow border border-[#FF3B30]/10 relative overflow-hidden group cursor-pointer"
+            onClick={() => router.push('/asha/high-risk')}
+            className="bg-gradient-to-br from-[#FFF2F2] to-white rounded-[24px] p-6 apple-shadow border border-[#FF3B30]/10 relative overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF3B30]/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-110" />
             <div className="flex items-start justify-between mb-4">
               <div className="w-10 h-10 rounded-full bg-[#FF3B30]/10 flex items-center justify-center">
                 <AlertCircle className="w-5 h-5 text-[#FF3B30]" />
               </div>
-              <span className="text-2xl font-semibold text-[#FF3B30]">{alerts.length}</span>
+              <span className="text-2xl font-semibold text-[#FF3B30]">{patients.filter(p => p.healthStatus === 'needs_doctor').length}</span>
             </div>
             <h3 className="font-medium text-lg mb-1">High Risk Alerts</h3>
             <p className="text-sm text-[#86868B]">Requires immediate attention</p>
           </motion.div>
 
-          {/* Follow-ups Today */}
+          {/* Total Patients */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-[24px] p-6 apple-shadow border border-[#E5E5EA]/50 relative overflow-hidden group cursor-pointer"
+            onClick={() => router.push('/asha/patients')}
+            className="bg-white rounded-[24px] p-6 apple-shadow border border-[#E5E5EA]/50 relative overflow-hidden group cursor-pointer hover:shadow-lg transition-shadow"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-[#0071E3]/5 rounded-full blur-2xl -mr-10 -mt-10 transition-transform group-hover:scale-110" />
             <div className="flex items-start justify-between mb-4">
@@ -164,7 +158,7 @@ export default function AshaDashboard() {
             <p className="text-sm text-[#86868B]">Registered patients</p>
           </motion.div>
 
-          {/* Add New Patient — replaces Scheme Alerts */}
+          {/* Add New Patient */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -222,27 +216,28 @@ export default function AshaDashboard() {
           </motion.div>
         )}
 
-        {/* ── Registered Patients (Upcoming Visits) ── */}
+        {/* ── Ongoing Patients ── */}
         <motion.div
+          id="ongoing-patients"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
           <div className="flex items-center justify-between mb-4 px-2">
-            <h3 className="text-xl font-semibold tracking-tight">Registered Patients</h3>
+            <h3 className="text-xl font-semibold tracking-tight">Ongoing Patients</h3>
           </div>
 
           <div className="bg-white rounded-[24px] apple-shadow border border-[#E5E5EA]/50 overflow-hidden">
             {isLoading ? (
               <div className="p-8 text-center text-[#86868B]">Loading patient data...</div>
-            ) : patients.length === 0 ? (
-              <div className="p-8 text-center text-[#86868B]">No registered patients yet. Click &ldquo;Add New Patient&rdquo; to get started.</div>
+            ) : patients.filter(p => p.healthStatus !== 'recovered' && p.healthStatus !== 'none').length === 0 ? (
+              <div className="p-8 text-center text-[#86868B]">No ongoing patients. All patients have been cleared.</div>
             ) : (
-              patients.map((patient, index) => (
+              patients.filter(p => p.healthStatus !== 'recovered' && p.healthStatus !== 'none').map((patient, index, arr) => (
                 <div
                   key={patient.id}
                   onClick={() => router.push(`/patient/profile?id=${patient.id}`)}
-                  className={`p-4 sm:p-5 flex items-center justify-between hover:bg-[#F5F5F7]/50 transition-colors cursor-pointer ${index !== patients.length - 1 ? 'border-b border-[#E5E5EA]/50' : ''
+                  className={`p-4 sm:p-5 flex items-center justify-between hover:bg-[#F5F5F7]/50 transition-colors cursor-pointer ${index !== arr.length - 1 ? 'border-b border-[#E5E5EA]/50' : ''
                     }`}
                 >
                   <div className="flex items-center space-x-4">

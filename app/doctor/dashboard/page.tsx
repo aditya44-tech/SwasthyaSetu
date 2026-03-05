@@ -297,7 +297,7 @@ export default function DoctorDashboard() {
                     </div>
 
                     <button
-                      onClick={() => router.push('/doctor/call')}
+                      onClick={() => router.push(`/doctor/call?caseId=${esCase.id}&patient=${encodeURIComponent(esCase.patient.fullName)}`)}
                       className={`px-6 py-2.5 font-medium rounded-full transition-colors flex items-center shadow-sm ${esCase.analysis.triage_level === 'Critical' || esCase.analysis.triage_level === 'High'
                         ? 'bg-[#FF3B30] hover:bg-[#E63529] text-white shadow-red-500/20'
                         : 'bg-[#0071E3] hover:bg-[#0077ED] text-white shadow-blue-500/20'

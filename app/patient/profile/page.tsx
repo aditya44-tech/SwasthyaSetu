@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { MapPin, Phone, User, ChevronLeft, Loader2, Calendar, Heart, Activity, AlertTriangle, Shield, Stethoscope, FileText, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, Phone, User, ChevronLeft, Loader2, Calendar, Heart, Activity, AlertTriangle, Shield, Stethoscope, FileText, Clock, ChevronDown, ChevronUp, Video } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -53,6 +53,7 @@ function PatientProfileContent() {
     const [ashaName, setAshaName] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [updatingStatus, setUpdatingStatus] = useState(false);
+    const [activeCall, setActiveCall] = useState<{ roomName: string } | null>(null);
 
     const handleStatusChange = async (newStatus: string) => {
         if (!healthData?.caseId || updatingStatus) return;
@@ -149,6 +150,17 @@ function PatientProfileContent() {
                     if (ashaRes.ok) {
                         const ashaData = await ashaRes.json();
                         setAshaName(ashaData.profile?.name || 'ASHA Worker');
+                    }
+                }
+
+                // Check for active video call
+                if (patientName) {
+                    const callRes = await fetch(`/api/consultations?patientName=${encodeURIComponent(patientName)}&status=active`);
+                    if (callRes.ok) {
+                        const callData = await callRes.json();
+                        if (callData.consultations?.length > 0) {
+                            setActiveCall({ roomName: callData.consultations[0].roomName });
+                        }
                     }
                 }
             } catch (err) {
@@ -259,6 +271,80 @@ function PatientProfileContent() {
                     </div>
                 </motion.div>
 
+                {/* ── Join Video Call Banner ── */}
+                {activeCall && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6"
+                    >
+                        <div className="bg-gradient-to-r from-[#0071E3] to-[#34C759] rounded-[20px] p-5 text-white apple-shadow-lg">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                        <Video className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-lg">Doctor is calling</h3>
+                                        <p className="text-white/80 text-sm">Video consultation is active — join now</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => window.open(`https://meet.jit.si/${activeCall.roomName}`, '_blank')}
+                                    className="px-6 py-3 bg-white text-[#0071E3] font-semibold rounded-full hover:bg-white/90 transition-colors text-sm"
+                                >
+                                    Join Call
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* ── Join Video Call by Code ── */}
+                {healthData && (healthData.triageLevel === 'High' || healthData.triageLevel === 'Critical') && healthData.status !== 'resolved' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6"
+                    >
+                        <div className="bg-white rounded-[20px] p-5 apple-shadow border border-[#E5E5EA]/50">
+                            <div className="flex items-center space-x-3 mb-4">
+                                <div className="w-10 h-10 bg-[#0071E3]/10 rounded-full flex items-center justify-center">
+                                    <Video className="w-5 h-5 text-[#0071E3]" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-[#1D1D1F]">Join Video Consultation</h3>
+                                    <p className="text-xs text-[#86868B]">Enter the room code shared by the doctor</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <input
+                                    type="text"
+                                    id="jitsi-room-code"
+                                    placeholder="Paste room code here..."
+                                    className="flex-1 px-4 py-3 bg-[#F5F5F7] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 border border-[#E5E5EA]/50"
+                                />
+                                <button
+                                    onClick={() => {
+                                        const input = document.getElementById('jitsi-room-code') as HTMLInputElement;
+                                        const code = input?.value?.trim();
+                                        if (code) {
+                                            // Support both full URLs and plain room names
+                                            const roomName = code.includes('meet.jit.si/')
+                                                ? code.split('meet.jit.si/')[1]?.split('#')[0]?.split('?')[0]
+                                                : code;
+                                            window.open(`https://meet.jit.si/${roomName}`, '_blank');
+                                        }
+                                    }}
+                                    className="px-6 py-3 bg-[#0071E3] text-white font-medium rounded-xl hover:bg-[#0077ED] transition-colors text-sm flex items-center gap-2"
+                                >
+                                    <Video className="w-4 h-4" />
+                                    Join Call
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
                 {/* ═══ PATIENT BASIC INFO ═══ */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
