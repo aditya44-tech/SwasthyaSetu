@@ -33,12 +33,6 @@ interface EscalatedCase {
   status: string;
 }
 
-const mockRequests = [
-  { id: 1001, patient: 'Radha Devi', asha: 'Sunita Sharma', age: 32, condition: 'High Risk Pregnancy - Elevated BP', urgency: 'high', waitTime: '5 mins' },
-  { id: 1002, patient: 'Ramesh Kumar', asha: 'Anita Patel', age: 55, condition: 'Severe Chest Pain', urgency: 'high', waitTime: '2 mins' },
-  { id: 1003, patient: 'Little Aarav', asha: 'Sunita Sharma', age: 2, condition: 'High Fever & Rash', urgency: 'medium', waitTime: '15 mins' },
-  { id: 1004, patient: 'Kamla Bai', asha: 'Pooja Singh', age: 68, condition: 'Routine Diabetes Check', urgency: 'low', waitTime: '45 mins' },
-];
 
 export default function DoctorDashboard() {
   const router = useRouter();
@@ -89,9 +83,8 @@ export default function DoctorDashboard() {
     return `${Math.floor(hrs / 24)}d ago`;
   };
 
-  const totalPending = escalatedCases.length + mockRequests.length;
-  const urgentCount = escalatedCases.filter(c => c.analysis.triage_level === 'High' || c.analysis.triage_level === 'Critical').length
-    + mockRequests.filter(r => r.urgency === 'high').length;
+  const totalPending = escalatedCases.length;
+  const urgentCount = escalatedCases.filter(c => c.analysis.triage_level === 'High' || c.analysis.triage_level === 'Critical').length;
 
   return (
     <div className="min-h-screen pb-20">
@@ -309,82 +302,6 @@ export default function DoctorDashboard() {
                   </div>
                 </motion.div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Regular Mock Requests ── */}
-        {activeFilter !== 'escalated' && (
-          <div>
-            {escalatedCases.length > 0 && activeFilter === 'all' && (
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-[#86868B] mb-4 flex items-center">
-                <Clock className="w-4 h-4 mr-2" />
-                Queued Consultations
-              </h3>
-            )}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {mockRequests
-                .filter(r => activeFilter === 'all' || (activeFilter === 'urgent' && r.urgency === 'high'))
-                .map((request, index) => (
-                  <motion.div
-                    key={request.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="bg-white rounded-[24px] p-6 apple-shadow border border-[#E5E5EA]/50 hover:shadow-lg transition-shadow"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="relative">
-                          <div className="w-12 h-12 rounded-full overflow-hidden">
-                            <DefaultAvatar name={request.patient} size={48} />
-                          </div>
-                          {request.urgency === 'high' && (
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF3B30] rounded-full border-2 border-white" />
-                          )}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold text-lg text-[#1D1D1F]">{request.patient}</h3>
-                          <p className="text-sm text-[#86868B]">{request.age} yrs • via {request.asha}</p>
-                        </div>
-                      </div>
-
-                      {request.urgency === 'high' ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#FF3B30]/10 text-[#FF3B30]">
-                          Urgent
-                        </span>
-                      ) : request.urgency === 'medium' ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#FF9500]/10 text-[#FF9500]">
-                          Priority
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-black/5 text-[#86868B]">
-                          Routine
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="bg-[#F5F5F7] rounded-2xl p-4 mb-6">
-                      <p className="text-sm font-medium text-[#1D1D1F] mb-1">Reported Condition</p>
-                      <p className="text-sm text-[#86868B]">{request.condition}</p>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center text-sm text-[#86868B]">
-                        <Clock className="w-4 h-4 mr-1.5" />
-                        Waiting: {request.waitTime}
-                      </div>
-
-                      <button
-                        onClick={() => router.push('/doctor/call')}
-                        className="px-6 py-2.5 bg-[#0071E3] hover:bg-[#0077ED] text-white font-medium rounded-full transition-colors flex items-center shadow-sm shadow-blue-500/20"
-                      >
-                        <Video className="w-4 h-4 mr-2" />
-                        Start Call
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
             </div>
           </div>
         )}

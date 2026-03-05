@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { MapPin, Phone, Stethoscope, ChevronRight, LogOut, Shield, Loader2, Briefcase, Users } from 'lucide-react';
+import { MapPin, Phone, Stethoscope, ChevronRight, LogOut, Shield, Loader2, Briefcase, Users, X, Check } from 'lucide-react';
 import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter } from 'next/navigation';
 
@@ -21,11 +21,13 @@ export default function DoctorProfilePage() {
     const [profile, setProfile] = useState<DoctorProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [caseCount, setCaseCount] = useState(0);
+    const [editing, setEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [editForm, setEditForm] = useState({ name: '', contact: '', location: '' });
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // First, try to load from session
                 const saved = localStorage.getItem('loggedInUser');
                 let profileLoaded = false;
                 if (saved) {
@@ -38,7 +40,6 @@ export default function DoctorProfilePage() {
                     } catch { /* ignore */ }
                 }
 
-                // Fallback to API if no session
                 if (!profileLoaded) {
                     const profileRes = await fetch('/api/profile/doctor');
                     if (profileRes.ok) {
@@ -47,7 +48,6 @@ export default function DoctorProfilePage() {
                     }
                 }
 
-                // Always fetch live case count
                 const casesRes = await fetch('/api/cases');
                 if (casesRes.ok) {
                     const casesData = await casesRes.json();
@@ -61,6 +61,36 @@ export default function DoctorProfilePage() {
         };
         fetchData();
     }, []);
+
+    const startEdit = () => {
+        if (profile) {
+            setEditForm({ name: profile.name || '', contact: profile.contact || '', location: profile.location || '' });
+            setEditing(true);
+        }
+    };
+
+    const saveProfile = async () => {
+        if (!profile?.id) return;
+        setSaving(true);
+        try {
+            const res = await fetch('/api/profile/update', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: profile.id, ...editForm }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const updated = { ...profile, ...data.user };
+                setProfile(updated);
+                localStorage.setItem('loggedInUser', JSON.stringify(updated));
+                setEditing(false);
+            }
+        } catch (err) {
+            console.error('Failed to update profile:', err);
+        } finally {
+            setSaving(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -76,11 +106,7 @@ export default function DoctorProfilePage() {
 
     return (
         <div className="min-h-screen pb-20">
-            <Navbar
-                title="Doctor Profile"
-                userRole="doctor"
-
-            />
+            <Navbar title="Doctor Profile" userRole="doctor" />
 
             <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
                 {/* Avatar & Name */}
@@ -96,10 +122,68 @@ export default function DoctorProfilePage() {
                     <h2 className="text-2xl font-semibold tracking-tight">{profile?.name || 'Doctor'}</h2>
                     <p className="text-[#86868B] mt-1">Medical Officer • ID: {profile?.id?.slice(-6).toUpperCase()}</p>
 
-                    <button className="mt-6 px-6 py-2 bg-black/5 hover:bg-black/10 text-[#1D1D1F] font-medium rounded-full transition-colors text-sm">
+                    <button
+                        onClick={startEdit}
+                        className="mt-6 px-6 py-2 bg-black/5 hover:bg-black/10 text-[#1D1D1F] font-medium rounded-full transition-colors text-sm"
+                    >
                         Edit Profile
                     </button>
                 </motion.div>
+
+                {/* ── Edit Profile Form ── */}
+                {editing && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-6"
+                    >
+                        <div className="bg-white rounded-[24px] apple-shadow border border-[#E5E5EA]/50 overflow-hidden">
+                            <div className="px-5 py-4 border-b border-[#E5E5EA]/50 flex items-center justify-between">
+                                <h3 className="font-semibold text-[#1D1D1F]">Edit Profile</h3>
+                                <button onClick={() => setEditing(false)} className="p-1 hover:bg-black/5 rounded-full">
+                                    <X className="w-5 h-5 text-[#86868B]" />
+                                </button>
+                            </div>
+                            <div className="p-5 space-y-4">
+                                <div>
+                                    <label className="text-xs text-[#86868B] mb-1 block">Full Name</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.name}
+                                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                        className="w-full px-4 py-3 bg-[#F5F5F7] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 border border-[#E5E5EA]/50"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[#86868B] mb-1 block">Phone Number</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.contact}
+                                        onChange={e => setEditForm({ ...editForm, contact: e.target.value })}
+                                        className="w-full px-4 py-3 bg-[#F5F5F7] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 border border-[#E5E5EA]/50"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs text-[#86868B] mb-1 block">Hospital / Location</label>
+                                    <input
+                                        type="text"
+                                        value={editForm.location}
+                                        onChange={e => setEditForm({ ...editForm, location: e.target.value })}
+                                        className="w-full px-4 py-3 bg-[#F5F5F7] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 border border-[#E5E5EA]/50"
+                                    />
+                                </div>
+                                <button
+                                    onClick={saveProfile}
+                                    disabled={saving}
+                                    className="w-full py-3 bg-[#0071E3] hover:bg-[#0077ED] text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                                >
+                                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                    {saving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Stats Cards */}
                 <motion.div
@@ -195,7 +279,10 @@ export default function DoctorProfilePage() {
                     </button>
 
                     <button
-                        onClick={() => router.push('/')}
+                        onClick={() => {
+                            localStorage.removeItem('loggedInUser');
+                            router.push('/');
+                        }}
                         className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#FFF2F2] transition-colors group"
                     >
                         <div className="flex items-center">

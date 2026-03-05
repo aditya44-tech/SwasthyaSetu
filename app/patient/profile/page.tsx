@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { MapPin, Phone, User, ChevronLeft, Loader2, Calendar, Heart, Activity, AlertTriangle, Shield, Stethoscope, FileText, Clock, ChevronDown, ChevronUp, Video } from 'lucide-react';
+import { MapPin, Phone, User, ChevronLeft, Loader2, Calendar, Heart, Activity, AlertTriangle, Shield, Stethoscope, FileText, Clock, ChevronDown, ChevronUp, Video, Pill, ClipboardList } from 'lucide-react';
 import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
@@ -42,6 +42,16 @@ interface HistoryItem {
     escalatedAt: string;
 }
 
+interface ConsultationData {
+    id: string;
+    notes: string;
+    prescriptions: string;
+    riskLevel: string;
+    patientStatus: string;
+    endedAt: string;
+    startedAt: string;
+}
+
 function PatientProfileContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -54,6 +64,7 @@ function PatientProfileContent() {
     const [loading, setLoading] = useState(true);
     const [updatingStatus, setUpdatingStatus] = useState(false);
     const [activeCall, setActiveCall] = useState<{ roomName: string } | null>(null);
+    const [consultations, setConsultations] = useState<ConsultationData[]>([]);
 
     const handleStatusChange = async (newStatus: string) => {
         if (!healthData?.caseId || updatingStatus) return;
@@ -161,6 +172,15 @@ function PatientProfileContent() {
                         if (callData.consultations?.length > 0) {
                             setActiveCall({ roomName: callData.consultations[0].roomName });
                         }
+                    }
+                }
+
+                // Fetch completed consultations
+                if (patientName) {
+                    const consRes = await fetch(`/api/consultations?patientName=${encodeURIComponent(patientName)}&status=completed`);
+                    if (consRes.ok) {
+                        const consData = await consRes.json();
+                        setConsultations(consData.consultations || []);
                     }
                 }
             } catch (err) {
@@ -338,6 +358,90 @@ function PatientProfileContent() {
                         </div>
                     </motion.div>
                 )}
+
+                {/* ═══ DOCTOR'S CONSULTATIONS ═══ */}
+                {consultations.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.05 }}
+                        className="mb-6"
+                    >
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-[#86868B] mb-3 flex items-center px-1">
+                            <Stethoscope className="w-4 h-4 mr-2" />
+                            Doctor&apos;s Consultations
+                        </h3>
+                        <div className="space-y-4">
+                            {consultations.map((cons, idx) => (
+                                <div key={cons.id || idx} className="bg-white rounded-[20px] apple-shadow border border-[#E5E5EA]/50 overflow-hidden">
+                                    {/* Header with date and status */}
+                                    <div className="px-5 py-3 bg-gradient-to-r from-[#0071E3]/5 to-[#34C759]/5 border-b border-[#E5E5EA]/50 flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Clock className="w-3.5 h-3.5 text-[#86868B]" />
+                                            <span className="text-xs text-[#86868B]">
+                                                {new Date(cons.endedAt || cons.startedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                            </span>
+                                        </div>
+                                        {cons.patientStatus && (
+                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${cons.patientStatus === 'Recovered' ? 'bg-[#34C759]/10 text-[#34C759]' :
+                                                    cons.patientStatus === 'Needs Follow-up' ? 'bg-[#FF9500]/10 text-[#FF9500]' :
+                                                        'bg-[#0071E3]/10 text-[#0071E3]'
+                                                }`}>
+                                                {cons.patientStatus}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {/* Risk Level */}
+                                    {cons.riskLevel && (
+                                        <div className="px-5 py-3 border-b border-[#E5E5EA]/50 flex items-center">
+                                            <div className="w-8 h-8 rounded-full bg-[#FF9500]/10 flex items-center justify-center mr-3 shrink-0">
+                                                <AlertTriangle className="w-4 h-4 text-[#FF9500]" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-xs text-[#86868B] mb-0.5">Updated Risk Level</p>
+                                                <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${cons.riskLevel === 'Critical' ? 'bg-[#FF3B30]/10 text-[#FF3B30]' :
+                                                        cons.riskLevel === 'High' ? 'bg-[#FF3B30]/10 text-[#FF3B30]' :
+                                                            cons.riskLevel === 'Medium' ? 'bg-[#FF9500]/10 text-[#FF9500]' :
+                                                                'bg-[#34C759]/10 text-[#34C759]'
+                                                    }`}>
+                                                    {cons.riskLevel} Risk
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Prescribed Medicines */}
+                                    {cons.prescriptions && (
+                                        <div className="px-5 py-3 border-b border-[#E5E5EA]/50 flex items-start">
+                                            <div className="w-8 h-8 rounded-full bg-[#AF52DE]/10 flex items-center justify-center mr-3 shrink-0 mt-0.5">
+                                                <Pill className="w-4 h-4 text-[#AF52DE]" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-xs text-[#86868B] mb-1">Prescribed Medicines</p>
+                                                <p className="text-sm text-[#1D1D1F] whitespace-pre-line">{cons.prescriptions}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Consultation Notes */}
+                                    {cons.notes && (
+                                        <div className="px-5 py-3 flex items-start">
+                                            <div className="w-8 h-8 rounded-full bg-[#0071E3]/10 flex items-center justify-center mr-3 shrink-0 mt-0.5">
+                                                <ClipboardList className="w-4 h-4 text-[#0071E3]" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-xs text-[#86868B] mb-1">Consultation Notes</p>
+                                                <p className="text-sm text-[#1D1D1F] whitespace-pre-line">{cons.notes}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* ═══ PATIENT BASIC INFO ═══ */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

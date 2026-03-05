@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Bell, Search, Menu, X, Home, User, Users, Activity, AlertTriangle, Stethoscope, UserPlus } from 'lucide-react';
+import { Search, Menu, X, Home, User, Users, Activity, AlertTriangle, Stethoscope, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import DefaultAvatar from './DefaultAvatar';
@@ -67,11 +67,6 @@ export default function Navbar({ title, userRole, userName }: NavbarProps) {
                   className="pl-9 pr-4 py-2 bg-black/5 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all w-64"
                 />
               </div>
-
-              <button className="p-2 text-[#1D1D1F] hover:bg-black/5 rounded-full transition-colors relative">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF3B30] rounded-full border-2 border-white" />
-              </button>
 
               <Link href={`/${userRole}/profile`} className="ml-2">
                 <DefaultAvatar name={userName || (userRole === 'asha' ? 'ASHA Worker' : 'Doctor')} size={36} />
