@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { ChevronRight, Search, Loader2 } from 'lucide-react';
-import Image from 'next/image';
+import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function PatientsContent() {
@@ -62,7 +62,7 @@ function PatientsContent() {
 
     return (
         <div className="min-h-screen pb-20">
-            <Navbar title="Total Patients" userRole="asha" profileImage="https://picsum.photos/seed/asha/200/200" />
+            <Navbar title="Total Patients" userRole="asha" />
 
             <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6">
                 {/* Search */}
@@ -98,9 +98,7 @@ function PatientsContent() {
                                     className={`p-4 sm:p-5 flex items-center justify-between hover:bg-[#F5F5F7]/50 transition-colors cursor-pointer ${i !== filtered.length - 1 ? 'border-b border-[#E5E5EA]/50' : ''}`}
                                 >
                                     <div className="flex items-center space-x-4">
-                                        <div className="w-11 h-11 rounded-full bg-black/5 shrink-0 overflow-hidden">
-                                            <Image src={`https://picsum.photos/seed/patient${patient.id}/100/100`} alt={patient.name} width={44} height={44} className="object-cover" />
-                                        </div>
+                                        <DefaultAvatar name={patient.name} size={44} />
                                         <div>
                                             <h4 className="font-medium text-[#1D1D1F]">{patient.name}</h4>
                                             <p className="text-xs text-[#86868B] mt-0.5">{patient.gender} • {patient.age} yrs • {patient.address || 'N/A'}</p>

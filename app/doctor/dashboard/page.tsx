@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { Video, Clock, Activity, Filter, AlertTriangle, ChevronDown, ChevronUp, FileText, User, MapPin, Phone } from 'lucide-react';
-import Image from 'next/image';
+import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter } from 'next/navigation';
 
 interface EscalatedCase {
@@ -98,7 +98,7 @@ export default function DoctorDashboard() {
       <Navbar
         title="Consultations"
         userRole="doctor"
-        profileImage="https://picsum.photos/seed/doctor/200/200"
+
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -336,8 +336,8 @@ export default function DoctorDashboard() {
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center space-x-3">
                         <div className="relative">
-                          <div className="w-12 h-12 rounded-full overflow-hidden bg-black/5">
-                            <Image src={`https://picsum.photos/seed/patient${request.id}/100/100`} alt={request.patient} width={48} height={48} className="object-cover" />
+                          <div className="w-12 h-12 rounded-full overflow-hidden">
+                            <DefaultAvatar name={request.patient} size={48} />
                           </div>
                           {request.urgency === 'high' && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF3B30] rounded-full border-2 border-white" />

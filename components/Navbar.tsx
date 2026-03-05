@@ -2,17 +2,17 @@
 
 import { useState } from 'react';
 import { Bell, Search, Menu, X, Home, User, Users, Activity, AlertTriangle, Stethoscope, UserPlus } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import DefaultAvatar from './DefaultAvatar';
 
 interface NavbarProps {
   title: string;
   userRole: 'asha' | 'doctor';
-  profileImage: string;
+  userName?: string;
 }
 
-export default function Navbar({ title, userRole, profileImage }: NavbarProps) {
+export default function Navbar({ title, userRole, userName }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
@@ -74,15 +74,7 @@ export default function Navbar({ title, userRole, profileImage }: NavbarProps) {
               </button>
 
               <Link href={`/${userRole}/profile`} className="ml-2">
-                <div className="w-9 h-9 rounded-full overflow-hidden border border-[#E5E5EA] hover:opacity-80 transition-opacity">
-                  <Image
-                    src={profileImage}
-                    alt="Profile"
-                    width={36}
-                    height={36}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
+                <DefaultAvatar name={userName || (userRole === 'asha' ? 'ASHA Worker' : 'Doctor')} size={36} />
               </Link>
             </div>
           </div>

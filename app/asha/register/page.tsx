@@ -56,7 +56,7 @@ export default function RegisterPatient() {
       <Navbar
         title="Patient Registration"
         userRole="asha"
-        profileImage="https://picsum.photos/seed/asha/200/200"
+        
       />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">

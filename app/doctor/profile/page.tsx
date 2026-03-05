@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { MapPin, Phone, Stethoscope, ChevronRight, LogOut, Shield, Loader2, Briefcase, Users } from 'lucide-react';
-import Image from 'next/image';
+import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter } from 'next/navigation';
 
 interface DoctorProfile {
@@ -65,7 +65,7 @@ export default function DoctorProfilePage() {
     if (loading) {
         return (
             <div className="min-h-screen pb-20">
-                <Navbar title="Doctor Profile" userRole="doctor" profileImage="https://picsum.photos/seed/doctor/200/200" />
+                <Navbar title="Doctor Profile" userRole="doctor" />
                 <div className="flex items-center justify-center pt-32">
                     <Loader2 className="w-8 h-8 animate-spin text-[#0071E3]" />
                     <span className="ml-3 text-[#86868B]">Loading profile...</span>
@@ -79,7 +79,7 @@ export default function DoctorProfilePage() {
             <Navbar
                 title="Doctor Profile"
                 userRole="doctor"
-                profileImage="https://picsum.photos/seed/doctor/200/200"
+
             />
 
             <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -90,13 +90,8 @@ export default function DoctorProfilePage() {
                     transition={{ duration: 0.5 }}
                     className="flex flex-col items-center mb-10"
                 >
-                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white apple-shadow-lg mb-4 relative">
-                        <Image
-                            src="https://picsum.photos/seed/doctor/400/400"
-                            alt={profile?.name || 'Doctor'}
-                            fill
-                            className="object-cover"
-                        />
+                    <div className="mb-4">
+                        <DefaultAvatar name={profile?.name || 'Doctor'} size={128} className="border-4 border-white apple-shadow-lg" />
                     </div>
                     <h2 className="text-2xl font-semibold tracking-tight">{profile?.name || 'Doctor'}</h2>
                     <p className="text-[#86868B] mt-1">Medical Officer • ID: {profile?.id?.slice(-6).toUpperCase()}</p>

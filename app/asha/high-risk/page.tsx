@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { ChevronRight, AlertTriangle } from 'lucide-react';
-import Image from 'next/image';
+import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter } from 'next/navigation';
 
 export default function HighRiskPage() {
@@ -47,7 +47,7 @@ export default function HighRiskPage() {
 
     return (
         <div className="min-h-screen pb-20">
-            <Navbar title="High Risk Alerts" userRole="asha" profileImage="https://picsum.photos/seed/asha/200/200" />
+            <Navbar title="High Risk Alerts" userRole="asha" />
 
             <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-6">
                 <div className="flex items-center gap-3 mb-6">
@@ -82,9 +82,7 @@ export default function HighRiskPage() {
                                 >
                                     <div className="flex items-center space-x-4">
                                         <div className="relative">
-                                            <div className="w-11 h-11 rounded-full bg-black/5 shrink-0 overflow-hidden">
-                                                <Image src={`https://picsum.photos/seed/patient${patient.id}/100/100`} alt={patient.name} width={44} height={44} className="object-cover" />
-                                            </div>
+                                            <DefaultAvatar name={patient.name} size={44} />
                                             <div className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#FF3B30] rounded-full border-2 border-white" />
                                         </div>
                                         <div>

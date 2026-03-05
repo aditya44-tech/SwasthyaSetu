@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { MapPin, Phone, User, ChevronLeft, Loader2, Calendar, Heart, Activity, AlertTriangle, Shield, Stethoscope, FileText, Clock, ChevronDown, ChevronUp, Video } from 'lucide-react';
-import Image from 'next/image';
+import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -196,7 +196,7 @@ function PatientProfileContent() {
     if (loading) {
         return (
             <div className="min-h-screen pb-20">
-                <Navbar title="Patient Profile" userRole="asha" profileImage="https://picsum.photos/seed/asha/200/200" />
+                <Navbar title="Patient Profile" userRole="asha" />
                 <div className="flex items-center justify-center pt-32">
                     <Loader2 className="w-8 h-8 animate-spin text-[#0071E3]" />
                     <span className="ml-3 text-[#86868B]">Loading patient profile...</span>
@@ -208,7 +208,7 @@ function PatientProfileContent() {
     if (!profile) {
         return (
             <div className="min-h-screen pb-20">
-                <Navbar title="Patient Profile" userRole="asha" profileImage="https://picsum.photos/seed/asha/200/200" />
+                <Navbar title="Patient Profile" userRole="asha" />
                 <div className="flex flex-col items-center justify-center pt-32 px-4 text-center">
                     <User className="w-16 h-16 text-[#C7C7CC] mb-4" />
                     <h2 className="text-xl font-semibold text-[#1D1D1F] mb-2">No Patient Found</h2>
@@ -232,7 +232,7 @@ function PatientProfileContent() {
             <Navbar
                 title="Patient Profile"
                 userRole="asha"
-                profileImage="https://picsum.photos/seed/asha/200/200"
+
             />
 
             <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -254,14 +254,7 @@ function PatientProfileContent() {
                     className="flex flex-col items-center mb-8"
                 >
                     <div className="relative mb-4">
-                        <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-white apple-shadow-lg relative">
-                            <Image
-                                src={`https://picsum.photos/seed/patient${profile.id}/400/400`}
-                                alt={profile.fullName}
-                                fill
-                                className="object-cover"
-                            />
-                        </div>
+                        <DefaultAvatar name={profile.fullName} size={112} className="border-4 border-white apple-shadow-lg" />
                     </div>
                     <h2 className="text-2xl font-semibold tracking-tight">{profile.fullName}</h2>
                     <div className="flex items-center gap-2 mt-2">

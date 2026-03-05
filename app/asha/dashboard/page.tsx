@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { AlertCircle, Calendar, ChevronRight, Bell, UserPlus } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter } from 'next/navigation';
 
 export default function AshaDashboard() {
@@ -102,7 +102,7 @@ export default function AshaDashboard() {
       <Navbar
         title="Overview"
         userRole="asha"
-        profileImage="https://picsum.photos/seed/asha/200/200"
+
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -241,8 +241,8 @@ export default function AshaDashboard() {
                     }`}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center shrink-0 overflow-hidden">
-                      <Image src={`https://picsum.photos/seed/patient${patient.id}/100/100`} alt={patient.name} width={48} height={48} className="object-cover" />
+                    <div className="w-12 h-12 flex items-center justify-center shrink-0">
+                      <DefaultAvatar name={patient.name} size={48} />
                     </div>
                     <div>
                       <h4 className="font-medium text-[#1D1D1F]">{patient.name}</h4>

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -24,12 +25,20 @@ async function dbConnect() {
         return cached.conn;
     }
 
+    // Force Google DNS — fixes networks where the default DNS can't resolve .mongodb.net
+    try {
+        dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+    } catch {
+        // dns.setServers may fail if already set, ignore
+    }
+
     if (!cached.promise) {
         const opts = {
             bufferCommands: false,
         };
 
         cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+            console.log('✅ MongoDB connected successfully');
             return mongoose;
         });
     }
@@ -38,6 +47,7 @@ async function dbConnect() {
         cached.conn = await cached.promise;
     } catch (e) {
         cached.promise = null;
+        console.error('❌ MongoDB connection failed:', e);
         throw e;
     }
 

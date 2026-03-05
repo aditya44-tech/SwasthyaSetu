@@ -254,7 +254,7 @@ export default function SymptomAnalysis() {
       <Navbar
         title="AI Symptom Checker"
         userRole="asha"
-        profileImage="https://picsum.photos/seed/asha/200/200"
+        
       />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
