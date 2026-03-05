@@ -39,11 +39,12 @@ interface AnalysisResult {
 }
 
 interface PatientData {
+  id?: string;
   fullName: string;
   age: string;
   gender: string;
-  phoneNumber: string;
-  address: string;
+  phoneNumber?: string;
+  address?: string;
   pregnancyStatus?: string;
 }
 
@@ -91,17 +92,20 @@ export default function SymptomAnalysis() {
       setEscalated(false);
       setShowFollowUp(false);
 
-      // Handle High Risk Alert — save alert
+      // Handle High Risk Alert — save alert to MongoDB
       if ((data.triage_level === 'High' || data.triage_level === 'Critical') && patient) {
-        const alerts = JSON.parse(localStorage.getItem('followUpAlerts') || '[]');
         const newAlert = {
-          id: Date.now(),
           patientName: patient.fullName,
+          patientId: patient.id,
           riskLevel: data.triage_level,
-          date: new Date().toLocaleString(),
-          condition: data.possible_conditions[0] || 'Unknown'
+          condition: data.possible_conditions[0] || 'Unknown',
+          date: new Date().toLocaleString()
         };
-        localStorage.setItem('followUpAlerts', JSON.stringify([newAlert, ...alerts]));
+        fetch('/api/alerts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newAlert)
+        }).catch(err => console.error('Failed to save alert:', err));
       }
 
       // Auto-escalate High/Critical to doctor dashboard
@@ -117,44 +121,62 @@ export default function SymptomAnalysis() {
   };
 
   // ── Escalation to Doctor Dashboard ──
-  const escalateToDoctor = (analysisResult: AnalysisResult) => {
-    const escalatedCases = JSON.parse(localStorage.getItem('escalatedCases') || '[]');
-    const newCase = {
-      id: Date.now(),
-      patient: patient ? {
-        fullName: patient.fullName,
-        age: patient.age,
-        gender: patient.gender,
-        phoneNumber: patient.phoneNumber,
-        address: patient.address,
-        pregnancyStatus: patient.pregnancyStatus,
-      } : {
-        fullName: 'Unknown Patient',
-        age: 'N/A',
-        gender: 'N/A',
-      },
-      symptoms: input,
-      analysis: analysisResult,
-      escalatedAt: new Date().toISOString(),
-      status: 'pending',
-    };
-    localStorage.setItem('escalatedCases', JSON.stringify([newCase, ...escalatedCases]));
-    setEscalated(true);
+  const escalateToDoctor = async (analysisResult: AnalysisResult) => {
+    try {
+      const newCase = {
+        patient: patient ? {
+          fullName: patient.fullName,
+          age: patient.age,
+          gender: patient.gender,
+          phoneNumber: patient.phoneNumber,
+          address: patient.address,
+          pregnancyStatus: patient.pregnancyStatus,
+        } : {
+          fullName: 'Unknown Patient',
+          age: 'N/A',
+          gender: 'N/A',
+        },
+        symptoms: input,
+        analysis: analysisResult,
+        status: 'pending',
+      };
+
+      const res = await fetch('/api/escalate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCase),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to route case to database');
+      }
+
+      setEscalated(true);
+    } catch (err) {
+      console.error('Failed to escalate:', err);
+      // Optional: show an error state/toast here if desired
+    }
   };
 
-  const handleScheduleFollowUp = () => {
+  const handleScheduleFollowUp = async () => {
     setShowFollowUp(true);
-    // Save follow-up to localStorage
-    const followUps = JSON.parse(localStorage.getItem('scheduledFollowUps') || '[]');
+    // Save follow-up to MongoDB
     const newFollowUp = {
-      id: Date.now(),
-      patient: patient?.fullName || 'Unknown Patient',
+      patientName: patient?.fullName || 'Unknown Patient',
+      patientId: patient?.id,
       symptoms: input,
       triageLevel: result?.triage_level,
       scheduledDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
-      createdAt: new Date().toISOString(),
     };
-    localStorage.setItem('scheduledFollowUps', JSON.stringify([newFollowUp, ...followUps]));
+    try {
+      await fetch('/api/followups', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFollowUp)
+      });
+    } catch (err) {
+      console.error('Failed to schedule follow-up:', err);
+    }
   };
 
   // ── Web Speech API for voice input ──

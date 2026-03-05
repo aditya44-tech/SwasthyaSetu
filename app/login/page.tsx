@@ -7,14 +7,42 @@ import { HeartPulse, ChevronRight } from 'lucide-react';
 
 export default function LoginPage() {
   const [role, setRole] = useState<'asha' | 'doctor'>('asha');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (role === 'asha') {
-      router.push('/asha/dashboard');
-    } else {
-      router.push('/doctor/dashboard');
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password, role }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Login failed');
+        return;
+      }
+
+      // Save user session to localStorage
+      localStorage.setItem('loggedInUser', JSON.stringify(data.user));
+
+      if (role === 'asha') {
+        router.push('/asha/dashboard');
+      } else {
+        router.push('/doctor/dashboard');
+      }
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -24,7 +52,7 @@ export default function LoginPage() {
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-100 rounded-full blur-[120px] opacity-60 pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-green-100 rounded-full blur-[120px] opacity-60 pointer-events-none" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
@@ -34,7 +62,7 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-[#0071E3] rounded-2xl flex items-center justify-center mb-6 shadow-md shadow-blue-500/20">
             <HeartPulse className="text-white w-8 h-8" />
           </div>
-          
+
           <h1 className="text-3xl font-semibold tracking-tight mb-2 text-center">
             Welcome Back
           </h1>
@@ -42,17 +70,27 @@ export default function LoginPage() {
             Sign in to access your healthcare dashboard
           </p>
 
+          {error && (
+            <div className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-600 text-center">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleLogin} className="w-full space-y-5">
             <div className="space-y-4">
-              <input 
-                type="text" 
-                placeholder="Phone Number or ID" 
+              <input
+                type="text"
+                placeholder="Phone Number or ID"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
                 className="w-full px-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all duration-300 placeholder:text-[#86868B]"
                 required
               />
-              <input 
-                type="password" 
-                placeholder="Password" 
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all duration-300 placeholder:text-[#86868B]"
                 required
               />
@@ -62,39 +100,38 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setRole('asha')}
-                className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  role === 'asha' 
-                    ? 'bg-white text-[#1D1D1F] shadow-sm' 
+                className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${role === 'asha'
+                    ? 'bg-white text-[#1D1D1F] shadow-sm'
                     : 'text-[#86868B] hover:text-[#1D1D1F]'
-                }`}
+                  }`}
               >
                 ASHA Worker
               </button>
               <button
                 type="button"
                 onClick={() => setRole('doctor')}
-                className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${
-                  role === 'doctor' 
-                    ? 'bg-white text-[#1D1D1F] shadow-sm' 
+                className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${role === 'doctor'
+                    ? 'bg-white text-[#1D1D1F] shadow-sm'
                     : 'text-[#86868B] hover:text-[#1D1D1F]'
-                }`}
+                  }`}
               >
                 Doctor
               </button>
             </div>
 
-            <button 
+            <button
               type="submit"
-              className="w-full bg-[#0071E3] hover:bg-[#0077ED] text-white py-4 rounded-2xl font-medium transition-all duration-300 flex items-center justify-center group mt-4"
+              disabled={isLoading}
+              className="w-full bg-[#0071E3] hover:bg-[#0077ED] disabled:bg-blue-300 text-white py-4 rounded-2xl font-medium transition-all duration-300 flex items-center justify-center group mt-4"
             >
-              <span>Continue</span>
-              <ChevronRight className="w-5 h-5 ml-1 opacity-70 group-hover:translate-x-1 transition-transform" />
+              <span>{isLoading ? 'Signing in...' : 'Continue'}</span>
+              {!isLoading && <ChevronRight className="w-5 h-5 ml-1 opacity-70 group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
 
           <div className="mt-8 text-center space-y-4">
             <a href="#" className="text-sm text-[#0071E3] hover:underline block">Forgot password?</a>
-            
+
             <div className="pt-4 border-t border-gray-200/50">
               <p className="text-[#86868B] text-sm mb-3">Don&apos;t have an account?</p>
               <div className="flex gap-3 justify-center">

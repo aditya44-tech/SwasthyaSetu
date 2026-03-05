@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 interface EscalatedCase {
-  id: number;
+  id: string; // Changed from number to string to support MongoDB _id
   patient: {
     fullName: string;
     age: string;
@@ -43,16 +43,40 @@ const mockRequests = [
 export default function DoctorDashboard() {
   const router = useRouter();
   const [escalatedCases, setEscalatedCases] = useState<EscalatedCase[]>([]);
-  const [expandedCase, setExpandedCase] = useState<number | null>(null);
+  const [expandedCase, setExpandedCase] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'urgent' | 'escalated'>('all');
+  const [loadingCases, setLoadingCases] = useState(true);
+  const [userName, setUserName] = useState('Doctor');
 
   useEffect(() => {
-    const stored = localStorage.getItem('escalatedCases');
-    if (stored) {
+    // Load user name from session
+    const saved = localStorage.getItem('loggedInUser');
+    if (saved) {
       try {
-        setEscalatedCases(JSON.parse(stored));
-      } catch { /* ignore parse errors */ }
+        const user = JSON.parse(saved);
+        setUserName(user.name || 'Doctor');
+      } catch { /* ignore */ }
     }
+
+    const fetchCases = async () => {
+      try {
+        const res = await fetch('/api/cases');
+        if (res.ok) {
+          const data = await res.json();
+          setEscalatedCases(data.cases || []);
+        }
+      } catch (err) {
+        console.error('Error fetching escalated cases:', err);
+      } finally {
+        setLoadingCases(false);
+      }
+    };
+
+    fetchCases();
+
+    // Optional polling for new cases
+    const interval = setInterval(fetchCases, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const getTimeSince = (isoDate: string) => {
@@ -85,7 +109,7 @@ export default function DoctorDashboard() {
           className="flex flex-col md:flex-row md:items-end justify-between mb-8 space-y-4 md:space-y-0"
         >
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight mb-1">Dr. Mehta</h2>
+            <h2 className="text-3xl font-semibold tracking-tight mb-1">{userName}</h2>
             <p className="text-[#86868B]">
               You have {totalPending} pending consultation requests
               {urgentCount > 0 && <span className="text-[#FF3B30] font-medium"> • {urgentCount} urgent</span>}
@@ -120,7 +144,12 @@ export default function DoctorDashboard() {
         </motion.div>
 
         {/* ── Escalated Cases from ASHA Workers ── */}
-        {escalatedCases.length > 0 && activeFilter !== 'urgent' && (
+        {loadingCases ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="w-8 h-8 border-4 border-[#0071E3] border-t-transparent rounded-full animate-spin"></div>
+            <span className="ml-3 text-[#86868B] font-medium">Loading live cases...</span>
+          </div>
+        ) : escalatedCases.length > 0 && activeFilter !== 'urgent' && (
           <div className="mb-8">
             {activeFilter !== 'escalated' && (
               <h3 className="text-sm font-semibold uppercase tracking-wider text-[#86868B] mb-4 flex items-center">
@@ -136,8 +165,8 @@ export default function DoctorDashboard() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className={`bg-white rounded-[24px] p-6 apple-shadow border hover:shadow-lg transition-shadow ${esCase.analysis.triage_level === 'Critical' || esCase.analysis.triage_level === 'High'
-                      ? 'border-[#FF3B30]/30 ring-1 ring-[#FF3B30]/10'
-                      : 'border-[#FF9500]/30 ring-1 ring-[#FF9500]/10'
+                    ? 'border-[#FF3B30]/30 ring-1 ring-[#FF3B30]/10'
+                    : 'border-[#FF9500]/30 ring-1 ring-[#FF9500]/10'
                     }`}
                 >
                   {/* Header */}
@@ -181,8 +210,8 @@ export default function DoctorDashboard() {
                   {/* Triage Level & Specialty */}
                   <div className="flex items-center gap-3 mb-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${esCase.analysis.triage_level === 'Critical' ? 'bg-[#FF3B30]/10 text-[#FF3B30]' :
-                        esCase.analysis.triage_level === 'High' ? 'bg-[#FF9500]/10 text-[#FF9500]' :
-                          'bg-[#0071E3]/10 text-[#0071E3]'
+                      esCase.analysis.triage_level === 'High' ? 'bg-[#FF9500]/10 text-[#FF9500]' :
+                        'bg-[#0071E3]/10 text-[#0071E3]'
                       }`}>
                       {esCase.analysis.triage_level} Risk
                     </span>
@@ -270,8 +299,8 @@ export default function DoctorDashboard() {
                     <button
                       onClick={() => router.push('/doctor/call')}
                       className={`px-6 py-2.5 font-medium rounded-full transition-colors flex items-center shadow-sm ${esCase.analysis.triage_level === 'Critical' || esCase.analysis.triage_level === 'High'
-                          ? 'bg-[#FF3B30] hover:bg-[#E63529] text-white shadow-red-500/20'
-                          : 'bg-[#0071E3] hover:bg-[#0077ED] text-white shadow-blue-500/20'
+                        ? 'bg-[#FF3B30] hover:bg-[#E63529] text-white shadow-red-500/20'
+                        : 'bg-[#0071E3] hover:bg-[#0077ED] text-white shadow-blue-500/20'
                         }`}
                     >
                       <Video className="w-4 h-4 mr-2" />

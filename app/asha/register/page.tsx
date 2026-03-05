@@ -16,33 +16,51 @@ export default function RegisterPatient() {
     address: '',
     pregnancyStatus: 'Not Pregnant'
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Save to "database" (localStorage for this demo)
-    const patientData = {
-      ...formData,
-      id: Date.now().toString(),
-      registeredAt: new Date().toISOString()
-    };
-    
-    localStorage.setItem('currentPatient', JSON.stringify(patientData));
-    
-    // Redirect to Symptom Checker
-    router.push('/asha/symptoms');
+    setIsSubmitting(true);
+
+    try {
+      // Save to real MongoDB via our API
+      const res = await fetch('/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error('Failed to register patient');
+
+      const result = await res.json();
+
+      // Keep MongoDB ID in localStorage for the session (symptom checker needs it)
+      localStorage.setItem('currentPatient', JSON.stringify({
+        ...formData,
+        id: result.data.id,
+        registeredAt: result.data.createdAt
+      }));
+
+      // Redirect to Symptom Checker
+      router.push('/asha/symptoms');
+    } catch (error) {
+      console.error('Registration error:', error);
+      alert('Failed to register patient. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen pb-20">
-      <Navbar 
-        title="Patient Registration" 
-        userRole="asha" 
-        profileImage="https://picsum.photos/seed/asha/200/200" 
+      <Navbar
+        title="Patient Registration"
+        userRole="asha"
+        profileImage="https://picsum.photos/seed/asha/200/200"
       />
-      
+
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-        <motion.button 
+        <motion.button
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           onClick={() => router.back()}
@@ -52,7 +70,7 @@ export default function RegisterPatient() {
           Back to Dashboard
         </motion.button>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -71,11 +89,11 @@ export default function RegisterPatient() {
                   <User className="w-4 h-4 mr-2 text-[#0071E3]" />
                   Full Name
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={formData.fullName}
-                  onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                   placeholder="e.g. Radha Devi"
                   className="w-full px-5 py-4 bg-[#F5F5F7] border-none rounded-2xl focus:ring-2 focus:ring-[#0071E3]/30 transition-all"
                 />
@@ -88,11 +106,11 @@ export default function RegisterPatient() {
                     <Calendar className="w-4 h-4 mr-2 text-[#0071E3]" />
                     Age
                   </label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     required
                     value={formData.age}
-                    onChange={(e) => setFormData({...formData, age: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
                     placeholder="Years"
                     className="w-full px-5 py-4 bg-[#F5F5F7] border-none rounded-2xl focus:ring-2 focus:ring-[#0071E3]/30 transition-all"
                   />
@@ -104,9 +122,9 @@ export default function RegisterPatient() {
                     <User className="w-4 h-4 mr-2 text-[#0071E3]" />
                     Gender
                   </label>
-                  <select 
+                  <select
                     value={formData.gender}
-                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                     className="w-full px-5 py-4 bg-[#F5F5F7] border-none rounded-2xl focus:ring-2 focus:ring-[#0071E3]/30 transition-all appearance-none"
                   >
                     <option value="Female">Female</option>
@@ -118,7 +136,7 @@ export default function RegisterPatient() {
 
               {/* Conditional Pregnancy Field */}
               {formData.gender === 'Female' && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   className="space-y-2"
@@ -132,12 +150,11 @@ export default function RegisterPatient() {
                       <button
                         key={status}
                         type="button"
-                        onClick={() => setFormData({...formData, pregnancyStatus: status})}
-                        className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${
-                          formData.pregnancyStatus === status 
-                            ? 'bg-white text-[#1D1D1F] shadow-sm' 
-                            : 'text-[#86868B] hover:text-[#1D1D1F]'
-                        }`}
+                        onClick={() => setFormData({ ...formData, pregnancyStatus: status })}
+                        className={`flex-1 py-3 rounded-xl text-sm font-medium transition-all ${formData.pregnancyStatus === status
+                          ? 'bg-white text-[#1D1D1F] shadow-sm'
+                          : 'text-[#86868B] hover:text-[#1D1D1F]'
+                          }`}
                       >
                         {status}
                       </button>
@@ -152,11 +169,11 @@ export default function RegisterPatient() {
                   <Phone className="w-4 h-4 mr-2 text-[#0071E3]" />
                   Phone Number
                 </label>
-                <input 
-                  type="tel" 
+                <input
+                  type="tel"
                   required
                   value={formData.phoneNumber}
-                  onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                   placeholder="+91 XXXXX XXXXX"
                   className="w-full px-5 py-4 bg-[#F5F5F7] border-none rounded-2xl focus:ring-2 focus:ring-[#0071E3]/30 transition-all"
                 />
@@ -168,22 +185,23 @@ export default function RegisterPatient() {
                   <MapPin className="w-4 h-4 mr-2 text-[#0071E3]" />
                   Village / Address
                 </label>
-                <textarea 
+                <textarea
                   required
                   value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder="Enter village name or full address"
                   className="w-full px-5 py-4 bg-[#F5F5F7] border-none rounded-2xl focus:ring-2 focus:ring-[#0071E3]/30 transition-all h-24 resize-none"
                 />
               </div>
             </div>
 
-            <button 
+            <button
               type="submit"
-              className="w-full bg-[#0071E3] hover:bg-[#0077ED] text-white py-4 rounded-2xl font-semibold transition-all flex items-center justify-center group shadow-xl shadow-blue-500/20"
+              disabled={isSubmitting}
+              className="w-full bg-[#0071E3] hover:bg-[#0077ED] disabled:bg-blue-300 disabled:cursor-not-allowed text-white py-4 rounded-2xl font-semibold transition-all flex items-center justify-center group shadow-xl shadow-blue-500/20"
             >
-              Register & Start Analysis
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              {isSubmitting ? 'Registering...' : 'Register & Start Analysis'}
+              {!isSubmitting && <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
         </motion.div>
