@@ -7,6 +7,26 @@ export async function POST(req: NextRequest) {
         await dbConnect();
 
         const body = await req.json();
+        const patientName = body.patient?.fullName;
+
+        if (!patientName) {
+            return NextResponse.json({ success: false, error: 'Patient name required' }, { status: 400 });
+        }
+
+        // Check for existing active (non-resolved) case for this patient
+        const existing = await EscalatedCase.findOne({
+            'patient.fullName': patientName,
+            status: { $ne: 'resolved' }
+        });
+
+        if (existing) {
+            // Return the existing case instead of creating a duplicate
+            return NextResponse.json({
+                success: true,
+                data: existing,
+                message: 'Active case already exists for this patient'
+            }, { status: 200 });
+        }
 
         const newCase = await EscalatedCase.create(body);
 

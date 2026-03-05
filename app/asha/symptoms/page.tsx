@@ -20,6 +20,7 @@ import {
   Bell,
   CircleAlert
 } from 'lucide-react';
+import { analyzeSymptoms } from '@/lib/symptomEngine';
 
 type TriageLevel = 'Low' | 'Medium' | 'High' | 'Critical';
 
@@ -57,6 +58,7 @@ export default function SymptomAnalysis() {
   const [patient, setPatient] = useState<PatientData | null>(null);
   const [escalated, setEscalated] = useState(false);
   const [showFollowUp, setShowFollowUp] = useState(false);
+  const [voiceLang, setVoiceLang] = useState<'en-IN' | 'mr-IN'>('en-IN');
 
   useEffect(() => {
     const savedPatient = localStorage.getItem('currentPatient');
@@ -75,11 +77,30 @@ export default function SymptomAnalysis() {
       ? `Patient Context: Name: ${patient.fullName}, Age: ${patient.age}, Gender: ${patient.gender}${patient.pregnancyStatus ? `, Pregnancy Status: ${patient.pregnancyStatus}` : ''}.`
       : '';
 
+    // Step 1: Translate Marathi/Hindi to English if needed
+    let analyzableInput = input;
+    try {
+      if (navigator.onLine) {
+        const transRes = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: input }),
+        });
+        if (transRes.ok) {
+          const transData = await transRes.json();
+          if (transData.translated && transData.translated !== input) {
+            analyzableInput = transData.translated + ' ' + input; // Keep original for keyword matching too
+          }
+        }
+      }
+    } catch { /* translation failed, proceed with original input */ }
+
+    // Step 2: Analyze symptoms with translated + original input
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input, patientContext }),
+        body: JSON.stringify({ input: analyzableInput, patientContext }),
       });
 
       const data = await res.json();
@@ -114,7 +135,19 @@ export default function SymptomAnalysis() {
       }
     } catch (err) {
       console.error("AI Analysis Error:", err);
-      setError(err instanceof Error ? err.message : "Failed to analyze symptoms. Please try again.");
+      // Offline fallback: run symptom engine locally
+      try {
+        const localResult = analyzeSymptoms(analyzableInput, patientContext);
+        setResult(localResult as AnalysisResult);
+        setEscalated(false);
+        setShowFollowUp(false);
+
+        if ((localResult.triage_level === 'High' || localResult.triage_level === 'Critical') && patient) {
+          escalateToDoctor(localResult as AnalysisResult);
+        }
+      } catch (localErr) {
+        setError('Failed to analyze symptoms. Please try again.');
+      }
     } finally {
       setIsAnalyzing(false);
     }
@@ -198,7 +231,7 @@ export default function SymptomAnalysis() {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'hi-IN'; // Default to Hindi; also recognizes English mixed input
+    recognition.lang = voiceLang; // 'en-IN' for English, 'mr-IN' for Marathi
     recognition.continuous = true;
     recognition.interimResults = true;
 
@@ -254,7 +287,7 @@ export default function SymptomAnalysis() {
       <Navbar
         title="AI Symptom Checker"
         userRole="asha"
-        
+
       />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -289,11 +322,19 @@ export default function SymptomAnalysis() {
                   <Languages className="w-4 h-4 mr-2 text-[#0071E3]" />
                   Patient Symptoms
                 </label>
-                <div className="flex space-x-2">
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => setVoiceLang(voiceLang === 'en-IN' ? 'mr-IN' : 'en-IN')}
+                    className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/5 hover:bg-black/10 text-[#1D1D1F] transition-colors"
+                    title={voiceLang === 'en-IN' ? 'Switch to Marathi' : 'Switch to English'}
+                  >
+                    {voiceLang === 'en-IN' ? 'EN' : 'मरा'}
+                  </button>
                   <button
                     onClick={toggleRecording}
                     className={`p-2 rounded-full transition-all ${isRecording ? 'bg-[#FF3B30] text-white animate-pulse' : 'bg-black/5 text-[#1D1D1F] hover:bg-black/10'
                       }`}
+                    title={isRecording ? 'Stop recording' : `Start voice input (${voiceLang === 'en-IN' ? 'English' : 'Marathi'})`}
                   >
                     <Mic className="w-4 h-4" />
                   </button>

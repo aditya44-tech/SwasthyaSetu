@@ -28,7 +28,7 @@ interface SymptomDef {
 const SYMPTOM_DATABASE: SymptomDef[] = [
     // ── FEVER ──
     {
-        keywords: ['fever', 'bukhar', 'bukhaar', 'tez bukhar', 'high fever', 'temperature', 'taap', 'jwara', 'kaichal'],
+        keywords: ['fever', 'bukhar', 'bukhaar', 'tez bukhar', 'high fever', 'temperature', 'taap', 'jwara', 'kaichal', 'ताप', 'बुखार', 'तेज बुखार', 'ज्वर', 'तापमान', 'ताप आहे', 'ताप येतो', 'ताप आला', 'ताप आलाय'],
         severity: 2,
         conditions: ['Viral Fever', 'Malaria', 'Dengue', 'Typhoid', 'Influenza'],
         specialty: 'General Medicine / Internal Medicine',
@@ -37,7 +37,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── COUGH / RESPIRATORY ──
     {
-        keywords: ['cough', 'khansi', 'khaansi', 'dry cough', 'wet cough', 'sookhi khansi', 'balgam', 'phlegm', 'sputum'],
+        keywords: ['cough', 'khansi', 'khaansi', 'dry cough', 'wet cough', 'sookhi khansi', 'balgam', 'phlegm', 'sputum', 'खांसी', 'खोकला', 'कोरडा खोकला', 'बलगम', 'कफ', 'सूखी खांसी', 'खोकला येतो', 'खोकला आहे'],
         severity: 2,
         conditions: ['Upper Respiratory Infection', 'Bronchitis', 'Pneumonia', 'Tuberculosis', 'Asthma'],
         specialty: 'Pulmonology / General Medicine',
@@ -46,7 +46,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── BREATHING DIFFICULTY ──
     {
-        keywords: ['breathless', 'breathing', 'saans', 'sans', 'saans lene', 'dyspnea', 'difficulty breathing', 'saans phoolna', 'dam', 'breath problem'],
+        keywords: ['breathless', 'breathing', 'saans', 'sans', 'saans lene', 'dyspnea', 'difficulty breathing', 'saans phoolna', 'dam', 'breath problem', 'श्वास', 'सांस', 'दम', 'श्वास घेण्यास त्रास', 'सांस लेने में तकलीफ', 'दम लागणे', 'श्वास लागणे'],
         severity: 3,
         conditions: ['Asthma', 'Pneumonia', 'COPD', 'Heart Failure', 'Severe Allergic Reaction', 'COVID-19'],
         specialty: 'Pulmonology / Emergency Medicine',
@@ -55,7 +55,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── CHEST PAIN ──
     {
-        keywords: ['chest pain', 'seene mein dard', 'chhati', 'chest', 'heart pain', 'dil ka dard', 'angina'],
+        keywords: ['chest pain', 'seene mein dard', 'chhati', 'chest', 'heart pain', 'dil ka dard', 'angina', 'छाती', 'छातीत दुखणे', 'सीने में दर्द', 'छातीत दुखतंय', 'दिल का दर्द', 'हृदय'],
         severity: 4,
         conditions: ['Myocardial Infarction (Heart Attack)', 'Angina', 'Pericarditis', 'Pulmonary Embolism', 'GERD'],
         specialty: 'Cardiology / Emergency Medicine',
@@ -64,7 +64,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── HEADACHE ──
     {
-        keywords: ['headache', 'sir dard', 'sar dard', 'sir mein dard', 'migraine', 'head pain'],
+        keywords: ['headache', 'sir dard', 'sar dard', 'sir mein dard', 'migraine', 'head pain', 'डोकेदुखी', 'सिरदर्द', 'सर दर्द', 'डोके दुखतंय', 'डोकं दुखतंय', 'माइग्रेन', 'डोकं', 'डोके', 'डोकं दुखत'],
         severity: 1,
         conditions: ['Tension Headache', 'Migraine', 'Sinusitis', 'Hypertension', 'Dehydration'],
         specialty: 'General Medicine / Neurology',
@@ -73,7 +73,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── DIARRHEA / LOOSE MOTIONS ──
     {
-        keywords: ['diarrhea', 'diarrhoea', 'loose motion', 'loose motions', 'dast', 'ulti dast', 'pet kharab', 'watery stool', 'potty'],
+        keywords: ['diarrhea', 'diarrhoea', 'loose motion', 'loose motions', 'dast', 'ulti dast', 'pet kharab', 'watery stool', 'potty', 'जुलाब', 'दस्त', 'पेट खराब', 'पातळ शौच', 'हगवण', 'संडास लागणे'],
         severity: 2,
         conditions: ['Gastroenteritis', 'Cholera', 'Food Poisoning', 'Dysentery', 'Intestinal Infection'],
         specialty: 'General Medicine / Gastroenterology',
@@ -82,7 +82,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── VOMITING ──
     {
-        keywords: ['vomiting', 'vomit', 'ulti', 'nausea', 'ji machlana', 'ji matlana', 'matli'],
+        keywords: ['vomiting', 'vomit', 'ulti', 'nausea', 'ji machlana', 'ji matlana', 'matli', 'उलटी', 'उल्टी', 'मळमळ', 'ओकारी', 'मतली', 'उलटी होणे', 'उलटी येणे'],
         severity: 2,
         conditions: ['Gastritis', 'Food Poisoning', 'Pregnancy (Morning Sickness)', 'Gastroenteritis', 'Intestinal Obstruction'],
         specialty: 'General Medicine / Gastroenterology',
@@ -91,7 +91,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── STOMACH / ABDOMINAL PAIN ──
     {
-        keywords: ['stomach pain', 'pet dard', 'pet mein dard', 'abdominal', 'belly pain', 'pait dard', 'cramps'],
+        keywords: ['stomach pain', 'pet dard', 'pet mein dard', 'abdominal', 'belly pain', 'pait dard', 'cramps', 'पोटदुखी', 'पेट दर्द', 'पोट दुखतंय', 'पोटात दुखतंय', 'पेट में दर्द', 'पोट', 'पोटात', 'पोट दुखत'],
         severity: 2,
         conditions: ['Gastritis', 'Appendicitis', 'Peptic Ulcer', 'Kidney Stones', 'Intestinal Obstruction'],
         specialty: 'General Medicine / Surgery',
@@ -100,7 +100,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── PREGNANCY RELATED ──
     {
-        keywords: ['pregnant', 'pregnancy', 'garbhvati', 'garbh', 'pet se', 'delivery', 'labor', 'labour', 'prasav', 'bleeding pregnancy', 'spotting'],
+        keywords: ['pregnant', 'pregnancy', 'garbhvati', 'garbh', 'pet se', 'delivery', 'labor', 'labour', 'prasav', 'bleeding pregnancy', 'spotting', 'गरोदर', 'गर्भवती', 'प्रसव', 'डिलिव्हरी', 'गर्भ', 'पेट से'],
         severity: 3,
         conditions: ['Normal Pregnancy', 'Ectopic Pregnancy', 'Pre-eclampsia', 'Threatened Abortion', 'Gestational Diabetes'],
         specialty: 'Obstetrics & Gynecology',
@@ -109,7 +109,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── SKIN / RASH ──
     {
-        keywords: ['rash', 'skin', 'itching', 'khujli', 'daane', 'dane', 'allergy', 'red spots', 'lal daane', 'scabies', 'fungal'],
+        keywords: ['rash', 'skin', 'itching', 'khujli', 'daane', 'dane', 'allergy', 'red spots', 'lal daane', 'scabies', 'fungal', 'खाज', 'खुजली', 'पुरळ', 'दाने', 'अंगावर दाने', 'त्वचा', 'एलर्जी', 'खरूज'],
         severity: 1,
         conditions: ['Allergic Dermatitis', 'Scabies', 'Fungal Infection', 'Measles', 'Chickenpox', 'Eczema'],
         specialty: 'Dermatology',
@@ -118,7 +118,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── BODY ACHE / PAIN ──
     {
-        keywords: ['body ache', 'body pain', 'badan dard', 'joint pain', 'jodo mein dard', 'muscle pain', 'weakness', 'kamzori', 'thakan', 'fatigue'],
+        keywords: ['body ache', 'body pain', 'badan dard', 'joint pain', 'jodo mein dard', 'muscle pain', 'weakness', 'kamzori', 'thakan', 'fatigue', 'अंगदुखी', 'बदन दर्द', 'सांधेदुखी', 'अशक्तपणा', 'थकवा', 'अंग दुखतंय', 'कमजोरी', 'जोडों में दर्द', 'अंग दुखत'],
         severity: 1,
         conditions: ['Viral Fever', 'Dengue', 'Chikungunya', 'Arthritis', 'Nutritional Deficiency'],
         specialty: 'General Medicine',
@@ -127,7 +127,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── EYE PROBLEMS ──
     {
-        keywords: ['eye pain', 'aankh', 'ankh', 'eye', 'vision', 'nazar', 'blurry', 'red eye', 'aankh lal'],
+        keywords: ['eye pain', 'aankh', 'ankh', 'eye', 'vision', 'nazar', 'blurry', 'red eye', 'aankh lal', 'डोळे', 'आंख', 'नजर', 'डोळे दुखतात', 'डोळे लाल', 'दिसत नाही', 'आंखों में दर्द'],
         severity: 1,
         conditions: ['Conjunctivitis', 'Refractive Error', 'Glaucoma', 'Cataract', 'Eye Infection'],
         specialty: 'Ophthalmology',
@@ -136,7 +136,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── BURNS ──
     {
-        keywords: ['burn', 'jalaa', 'jala', 'jalne', 'scald', 'fire', 'aag'],
+        keywords: ['burn', 'jalaa', 'jala', 'jalne', 'scald', 'fire', 'aag', 'भाजणे', 'जळणे', 'आग', 'जला', 'भाजलं', 'जल गया'],
         severity: 3,
         conditions: ['First Degree Burn', 'Second Degree Burn', 'Third Degree Burn'],
         specialty: 'Surgery / Emergency Medicine',
@@ -145,7 +145,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── SNAKE / ANIMAL BITE ──
     {
-        keywords: ['snake bite', 'saanp', 'sanp', 'bite', 'dog bite', 'kutta', 'animal bite', 'scorpion', 'bichhu'],
+        keywords: ['snake bite', 'saanp', 'sanp', 'bite', 'dog bite', 'kutta', 'animal bite', 'scorpion', 'bichhu', 'साप', 'सर्प', 'कुत्रा', 'कुत्ता', 'विंचू', 'बिच्छू', 'साप चावला', 'कुत्र्याने चावले'],
         severity: 4,
         conditions: ['Snake Envenomation', 'Rabies Risk', 'Wound Infection', 'Allergic Reaction'],
         specialty: 'Emergency Medicine',
@@ -154,7 +154,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── MALARIA / DENGUE ──
     {
-        keywords: ['malaria', 'dengue', 'platelets', 'chikungunya', 'mosquito'],
+        keywords: ['malaria', 'dengue', 'platelets', 'chikungunya', 'mosquito', 'मलेरिया', 'डेंगू', 'हिवताप', 'डास', 'मच्छर'],
         severity: 3,
         conditions: ['Malaria', 'Dengue Fever', 'Chikungunya'],
         specialty: 'General Medicine / Infectious Disease',
@@ -163,7 +163,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── SEIZURES / CONVULSIONS ──
     {
-        keywords: ['seizure', 'convulsion', 'mirgi', 'epilepsy', 'fit', 'jhatkay', 'unconscious', 'behosh', 'fainting'],
+        keywords: ['seizure', 'convulsion', 'mirgi', 'epilepsy', 'fit', 'jhatkay', 'unconscious', 'behosh', 'fainting', 'फिट', 'मिरगी', 'बेहोश', 'झटके', 'आकडी', 'शुद्ध हरपणे', 'बेशुद्ध'],
         severity: 4,
         conditions: ['Epilepsy', 'Febrile Seizure', 'Meningitis', 'Hypoglycemia', 'Head Injury'],
         specialty: 'Neurology / Emergency Medicine',
@@ -172,7 +172,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── DIABETES RELATED ──
     {
-        keywords: ['sugar', 'diabetes', 'madhumeh', 'blood sugar', 'thirst', 'baar baar peshab', 'frequent urination'],
+        keywords: ['sugar', 'diabetes', 'madhumeh', 'blood sugar', 'thirst', 'baar baar peshab', 'frequent urination', 'मधुमेह', 'शुगर', 'डायबिटीज', 'तहान', 'वारंवार लघवी', 'बार बार पेशाब'],
         severity: 2,
         conditions: ['Type 2 Diabetes', 'Diabetic Ketoacidosis', 'Urinary Tract Infection', 'Kidney Disease'],
         specialty: 'Endocrinology / General Medicine',
@@ -181,7 +181,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── BLOOD PRESSURE ──
     {
-        keywords: ['blood pressure', 'bp', 'high bp', 'low bp', 'hypertension', 'chakkar', 'dizziness', 'dizzy'],
+        keywords: ['blood pressure', 'bp', 'high bp', 'low bp', 'hypertension', 'chakkar', 'dizziness', 'dizzy', 'रक्तदाब', 'बीपी', 'चक्कर', 'चक्कर येणे', 'भोवळ', 'ब्लड प्रेशर'],
         severity: 2,
         conditions: ['Hypertension', 'Hypotension', 'Vertigo', 'Anemia', 'Inner Ear Disorder'],
         specialty: 'Cardiology / General Medicine',
@@ -190,7 +190,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
     },
     // ── CHILD-SPECIFIC ──
     {
-        keywords: ['child', 'baby', 'bachcha', 'infant', 'newborn', 'neonatal', 'not feeding', 'doodh nahi', 'crying', 'irritable'],
+        keywords: ['child', 'baby', 'bachcha', 'infant', 'newborn', 'neonatal', 'not feeding', 'doodh nahi', 'crying', 'irritable', 'बाळ', 'बच्चा', 'मूल', 'नवजात', 'दूध नाही पीत', 'रडतंय', 'दूध नहीं पी रहा'],
         severity: 2,
         conditions: ['Neonatal Sepsis', 'Malnutrition', 'Dehydration', 'Pneumonia', 'Diarrheal Disease'],
         specialty: 'Pediatrics',
@@ -201,6 +201,7 @@ const SYMPTOM_DATABASE: SymptomDef[] = [
 
 // ── Hindi/regional phrase translations ──
 const PHRASE_TRANSLATIONS: Record<string, string> = {
+    // Existing Hindi (Roman script)
     'tez bukhar': 'high fever',
     'saans lene mein takleef': 'difficulty breathing',
     'saans phoolna': 'shortness of breath',
@@ -228,6 +229,81 @@ const PHRASE_TRANSLATIONS: Record<string, string> = {
     'subah ko': 'in the morning',
     'khana khane ke baad': 'after eating',
     'pet se hai': 'is pregnant',
+    // ── Devanagari Hindi ──
+    'तेज बुखार': 'high fever',
+    'सांस लेने में तकलीफ': 'difficulty breathing',
+    'सांस फूलना': 'shortness of breath',
+    'पेट दर्द': 'stomach pain',
+    'पेट में दर्द': 'stomach pain',
+    'सिर दर्द': 'headache',
+    'सिर में दर्द': 'headache',
+    'बदन दर्द': 'body ache',
+    'जोड़ों में दर्द': 'joint pain',
+    'सीने में दर्द': 'chest pain',
+    'उल्टी दस्त': 'vomiting and diarrhea',
+    'आंख लाल': 'red eye',
+    'जी मचलना': 'nausea',
+    'बार बार पेशाब': 'frequent urination',
+    'खून आना': 'bleeding',
+    'पेशाब में जलन': 'burning urination',
+    'तीन दिन से': 'for three days',
+    'एक हफ्ते से': 'for one week',
+    'बहुत ज्यादा': 'very much / excessive',
+    'रात को': 'at night',
+    'सुबह को': 'in the morning',
+    'खाना खाने के बाद': 'after eating',
+    'पेट से है': 'is pregnant',
+    'दूध नहीं पी रहा': 'not feeding (infant)',
+    // ── Marathi ──
+    'तीन दिवसापासून ताप आहे': 'fever for three days',
+    'ताप आहे': 'has fever',
+    'ताप येतो': 'getting fever',
+    'ताप आला': 'got fever',
+    'खोकला येतो': 'has cough',
+    'खोकला आहे': 'has cough',
+    'डोकं दुखतंय': 'has headache',
+    'डोकं दुखत आहे': 'has headache',
+    'डोकं दुखतोय': 'has headache',
+    'डोकेदुखी आहे': 'has headache',
+    'पोटात दुखतंय': 'has stomach pain',
+    'पोटात दुखत आहे': 'has stomach pain',
+    'पोट दुखतंय': 'has stomach pain',
+    'पोट दुखत आहे': 'has stomach pain',
+    'पोटदुखी आहे': 'has stomach pain',
+    'उलटी होतेय': 'is vomiting',
+    'उलटी येतेय': 'is vomiting',
+    'जुलाब होतात': 'has diarrhea',
+    'जुलाब लागले': 'got diarrhea',
+    'संडास लागतोय': 'has diarrhea',
+    'अंग दुखतंय': 'has body ache',
+    'अंग दुखत आहे': 'has body ache',
+    'अंगदुखी आहे': 'has body ache',
+    'सांधे दुखतात': 'has joint pain',
+    'श्वास लागतो': 'has breathing difficulty',
+    'दम लागतो': 'has breathlessness',
+    'छातीत दुखतंय': 'has chest pain',
+    'छातीत दुखत आहे': 'has chest pain',
+    'चक्कर येतो': 'has dizziness',
+    'चक्कर येतात': 'has dizziness',
+    'भोवळ येते': 'feels dizzy',
+    'डोळे दुखतात': 'has eye pain',
+    'डोळे लाल आहेत': 'has red eyes',
+    'खाज सुटते': 'has itching',
+    'पुरळ आले': 'got rash',
+    'अंगावर दाने': 'rash on body',
+    'बाळाला ताप': 'baby has fever',
+    'बाळ रडतंय': 'baby is crying',
+    'दूध पीत नाही': 'not drinking milk',
+    'तीन दिवसांपासून': 'for three days',
+    'एक आठवड्यापासून': 'for one week',
+    'दोन दिवसांपासून': 'for two days',
+    'काल पासून': 'since yesterday',
+    'रात्री': 'at night',
+    'सकाळी': 'in the morning',
+    'जेवल्यावर': 'after eating',
+    'खूप': 'very much',
+    'थोडं': 'mild',
+    'दिवसापासून': 'days since',
 };
 
 // ── Government Health Schemes ──
@@ -295,18 +371,41 @@ export function analyzeSymptoms(
 ): AnalysisResult {
     const normalizedInput = input.toLowerCase().trim();
 
-    // Match symptoms
+    // FIRST: Translate phrases to English before matching
+    let translatedInput = normalizedInput;
+    for (const [phrase, english] of Object.entries(PHRASE_TRANSLATIONS)) {
+        if (normalizedInput.includes(phrase.toLowerCase())) {
+            translatedInput = translatedInput + ' ' + english.toLowerCase();
+        }
+    }
+
+    // Match symptoms against both original and translated input
+    const combinedInput = translatedInput;
     const matchedSymptoms: SymptomDef[] = [];
+
+    // Helper: for short keywords (≤4 chars), use word boundary regex to avoid
+    // false matches like 'साप' (snake) inside 'दिवसापासून' (since days)
+    const matchKeyword = (text: string, kw: string): boolean => {
+        const lkw = kw.toLowerCase();
+        if (lkw.length <= 4) {
+            // Use regex with word boundaries for short keywords
+            const escaped = lkw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp('(?:^|\\s|[,;.!?])' + escaped + '(?:$|\\s|[,;.!?])', 'i');
+            return re.test(text);
+        }
+        return text.includes(lkw);
+    };
+
     for (const symptom of SYMPTOM_DATABASE) {
         for (const keyword of symptom.keywords) {
-            if (normalizedInput.includes(keyword.toLowerCase())) {
+            if (matchKeyword(combinedInput, keyword)) {
                 matchedSymptoms.push(symptom);
                 break;
             }
         }
     }
 
-    // Translate input to English summary
+    // Build English summary from translations
     let englishSummary = input;
     for (const [hindi, english] of Object.entries(PHRASE_TRANSLATIONS)) {
         if (normalizedInput.includes(hindi.toLowerCase())) {

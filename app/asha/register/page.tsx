@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import { useRouter } from 'next/navigation';
 import { User, Calendar, Phone, MapPin, Baby, ArrowRight, ChevronLeft } from 'lucide-react';
+import { savePendingAction } from '@/lib/offlineDB';
 
 export default function RegisterPatient() {
   const router = useRouter();
@@ -23,29 +24,58 @@ export default function RegisterPatient() {
     setIsSubmitting(true);
 
     try {
-      // Save to real MongoDB via our API
-      const res = await fetch('/api/patients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      if (navigator.onLine) {
+        const res = await fetch('/api/patients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        });
 
-      if (!res.ok) throw new Error('Failed to register patient');
+        if (!res.ok) throw new Error('Failed to register patient');
 
-      const result = await res.json();
+        const result = await res.json();
+        localStorage.setItem('currentPatient', JSON.stringify({
+          ...formData,
+          id: result.data.id,
+          registeredAt: result.data.createdAt
+        }));
+      } else {
+        // OFFLINE: save to IndexedDB for later sync
+        const offlineId = 'offline_' + Date.now();
+        await savePendingAction({
+          id: offlineId,
+          type: 'register_patient',
+          data: formData,
+          createdAt: new Date().toISOString(),
+        });
+        localStorage.setItem('currentPatient', JSON.stringify({
+          ...formData,
+          id: offlineId,
+          registeredAt: new Date().toISOString()
+        }));
+      }
 
-      // Keep MongoDB ID in localStorage for the session (symptom checker needs it)
-      localStorage.setItem('currentPatient', JSON.stringify({
-        ...formData,
-        id: result.data.id,
-        registeredAt: result.data.createdAt
-      }));
-
-      // Redirect to Symptom Checker
       router.push('/asha/symptoms');
     } catch (error) {
       console.error('Registration error:', error);
-      alert('Failed to register patient. Please try again.');
+      // If online fails, save offline
+      try {
+        const offlineId = 'offline_' + Date.now();
+        await savePendingAction({
+          id: offlineId,
+          type: 'register_patient',
+          data: formData,
+          createdAt: new Date().toISOString(),
+        });
+        localStorage.setItem('currentPatient', JSON.stringify({
+          ...formData,
+          id: offlineId,
+          registeredAt: new Date().toISOString()
+        }));
+        router.push('/asha/symptoms');
+      } catch {
+        alert('Failed to save patient data. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -56,7 +86,7 @@ export default function RegisterPatient() {
       <Navbar
         title="Patient Registration"
         userRole="asha"
-        
+
       />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">

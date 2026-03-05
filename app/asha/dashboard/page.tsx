@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { AlertCircle, Calendar, ChevronRight, Bell, UserPlus } from 'lucide-react';
+import { AlertCircle, Calendar, ChevronRight, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter } from 'next/navigation';
+import { cachePatients, getCachedPatients, cacheCases, getCachedCases } from '@/lib/offlineDB';
 
 export default function AshaDashboard() {
   const router = useRouter();
@@ -27,59 +28,89 @@ export default function AshaDashboard() {
     }
 
     const loadData = async () => {
+      const isOnline = navigator.onLine;
       try {
-        const [alertsRes, patientsRes, casesRes] = await Promise.all([
-          fetch('/api/alerts'),
-          fetch('/api/patients'),
-          fetch('/api/cases')
-        ]);
+        if (isOnline) {
+          const [alertsRes, patientsRes, casesRes] = await Promise.all([
+            fetch('/api/alerts'),
+            fetch('/api/patients'),
+            fetch('/api/cases')
+          ]);
 
-        if (alertsRes.ok) {
-          const alertsData = await alertsRes.json();
-          setAlerts(alertsData.alerts || []);
-        }
+          if (alertsRes.ok) {
+            const alertsData = await alertsRes.json();
+            setAlerts(alertsData.alerts || []);
+          }
 
-        // Build a map of patient name -> status from escalated cases
-        const statusMap: Record<string, string> = {};
-        if (casesRes.ok) {
-          const casesData = await casesRes.json();
-          (casesData.cases || []).forEach((c: any) => {
+          const statusMap: Record<string, string> = {};
+          let casesArr: any[] = [];
+          if (casesRes.ok) {
+            const casesData = await casesRes.json();
+            casesArr = casesData.cases || [];
+            await cacheCases(casesArr);
+            casesArr.forEach((c: any) => {
+              const name = c.patient?.fullName;
+              if (name) {
+                const level = c.analysis?.triage_level;
+                if (c.status === 'resolved') statusMap[name] = 'recovered';
+                else if (level === 'High' || level === 'Critical') statusMap[name] = 'needs_doctor';
+                else statusMap[name] = 'monitoring';
+              }
+            });
+          }
+
+          if (patientsRes.ok) {
+            const patientsData = await patientsRes.json();
+            const raw = patientsData.patients || [];
+            await cachePatients(raw);
+            const formattedPatients = raw.map((p: any) => {
+              let healthStatus = statusMap[p.name] || 'none';
+              return {
+                id: p.id, name: p.name, age: p.age, gender: p.gender,
+                phoneNumber: p.phoneNumber, address: p.address,
+                pregnancyStatus: p.pregnancyStatus,
+                condition: p.pregnancyStatus !== 'Not Pregnant' && p.pregnancyStatus ? p.pregnancyStatus : 'Routine Checkup',
+                healthStatus, date: p.date
+              };
+            });
+            setPatients(formattedPatients);
+          }
+        } else {
+          // OFFLINE: load from IndexedDB cache
+          const cachedP = await getCachedPatients();
+          const cachedC = await getCachedCases();
+          const statusMap: Record<string, string> = {};
+          cachedC.forEach((c: any) => {
             const name = c.patient?.fullName;
             if (name) {
               const level = c.analysis?.triage_level;
-              if (c.status === 'resolved') {
-                statusMap[name] = 'recovered';
-              } else if (level === 'High' || level === 'Critical') {
-                statusMap[name] = 'needs_doctor';
-              } else {
-                statusMap[name] = 'monitoring';
-              }
+              if (c.status === 'resolved') statusMap[name] = 'recovered';
+              else if (level === 'High' || level === 'Critical') statusMap[name] = 'needs_doctor';
+              else statusMap[name] = 'monitoring';
             }
           });
-        }
-
-        if (patientsRes.ok) {
-          const patientsData = await patientsRes.json();
-          const formattedPatients = (patientsData.patients || []).map((p: any) => {
-            // Determine health status
-            let healthStatus = statusMap[p.name] || 'none';
-            return {
-              id: p.id,
-              name: p.name,
-              age: p.age,
-              gender: p.gender,
-              phoneNumber: p.phoneNumber,
-              address: p.address,
-              pregnancyStatus: p.pregnancyStatus,
-              condition: p.pregnancyStatus !== 'Not Pregnant' && p.pregnancyStatus ? p.pregnancyStatus : 'Routine Checkup',
-              healthStatus,
-              date: p.date
-            };
-          });
+          const formattedPatients = cachedP.map((p: any) => ({
+            id: p.id, name: p.name, age: p.age, gender: p.gender,
+            phoneNumber: p.phoneNumber, address: p.address,
+            pregnancyStatus: p.pregnancyStatus,
+            condition: p.pregnancyStatus !== 'Not Pregnant' && p.pregnancyStatus ? p.pregnancyStatus : 'Routine Checkup',
+            healthStatus: statusMap[p.name] || 'none', date: p.date
+          }));
           setPatients(formattedPatients);
         }
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
+        // If fetch fails, try IndexedDB
+        try {
+          const cachedP = await getCachedPatients();
+          setPatients(cachedP.map((p: any) => ({
+            id: p.id, name: p.name, age: p.age, gender: p.gender,
+            phoneNumber: p.phoneNumber, address: p.address,
+            pregnancyStatus: p.pregnancyStatus,
+            condition: p.pregnancyStatus !== 'Not Pregnant' && p.pregnancyStatus ? p.pregnancyStatus : 'Routine Checkup',
+            healthStatus: 'none', date: p.date
+          })));
+        } catch { /* ignore */ }
       } finally {
         setIsLoading(false);
       }
@@ -187,7 +218,7 @@ export default function AshaDashboard() {
           >
             <div className="flex items-center justify-between mb-4 px-2">
               <h3 className="text-xl font-semibold tracking-tight flex items-center">
-                <Bell className="w-5 h-5 mr-2 text-[#FF3B30]" />
+                <AlertCircle className="w-5 h-5 mr-2 text-[#FF3B30]" />
                 New Follow-up Alerts
               </h3>
               <button
