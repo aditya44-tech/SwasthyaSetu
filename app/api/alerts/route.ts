@@ -25,7 +25,18 @@ export async function POST(req: NextRequest) {
     try {
         await dbConnect();
         const body = await req.json();
-        const newAlert = await Alert.create(body);
+
+        // Deduplicate: only one alert per patient
+        // We use patientName as the primary identifier for deduplication here 
+        // since patientId might not be perfectly stable before DB sync
+        const filter = body.patientId ? { patientId: body.patientId } : { patientName: body.patientName };
+
+        const newAlert = await Alert.findOneAndUpdate(
+            filter,
+            body,
+            { new: true, upsert: true }
+        );
+
         return NextResponse.json({ success: true, data: newAlert }, { status: 201 });
     } catch (error: any) {
         console.error('Error creating alert:', error);

@@ -310,56 +310,66 @@ const PHRASE_TRANSLATIONS: Record<string, string> = {
 interface SchemeRule {
     name: string;
     description: string;
-    match: (input: string, patient?: { age?: string; gender?: string; pregnancyStatus?: string }) => boolean;
+    match: (input: string, patient?: { age?: string; gender?: string; pregnancyStatus?: string }, conditions?: string[], severity?: number) => boolean;
 }
 
 const HEALTH_SCHEMES: SchemeRule[] = [
     {
         name: 'Ayushman Bharat (PM-JAY)',
         description: 'Free treatment up to ₹5 lakh/year for hospitalization in empanelled hospitals. Covers 1,350+ medical packages.',
-        match: () => true, // Universal for BPL families
+        match: (_input, _patient, _conditions, severity) =>
+            // Only for cases serious enough to need hospitalization
+            (severity || 0) >= 3,
     },
     {
         name: 'Janani Suraksha Yojana (JSY)',
         description: 'Cash assistance for institutional delivery. ₹1,400 for rural and ₹1,000 for urban pregnant women.',
         match: (input, patient) =>
-            !!(patient?.pregnancyStatus && patient.pregnancyStatus !== 'none') ||
-            /pregnan|garbh|delivery|prasav|pet se/i.test(input),
+            !!(patient?.pregnancyStatus && patient.pregnancyStatus !== 'Not Pregnant' && patient.pregnancyStatus !== 'none') ||
+            /pregnan|garbh|delivery|prasav|pet se|गरोदर|गर्भवती|प्रसव/i.test(input),
     },
     {
         name: 'PM Matru Vandana Yojana (PMMVY)',
         description: 'Cash incentive of ₹5,000 in 3 installments for first living child. Covers maternity and nutrition needs.',
         match: (input, patient) =>
-            !!(patient?.pregnancyStatus && patient.pregnancyStatus !== 'none') ||
-            /pregnan|garbh|pet se/i.test(input),
+            !!(patient?.pregnancyStatus && patient.pregnancyStatus !== 'Not Pregnant' && patient.pregnancyStatus !== 'none') ||
+            /pregnan|garbh|pet se|गरोदर|गर्भवती/i.test(input),
     },
     {
         name: 'National Health Mission (NHM)',
         description: 'Free healthcare services at government health facilities including PHC, CHC, and District Hospitals.',
-        match: () => true,
+        match: (_input, _patient, _conditions, severity) =>
+            // Only when referral to PHC/hospital is warranted (medium+)
+            (severity || 0) >= 2,
     },
     {
         name: 'Rashtriya Bal Swasthya Karyakram (RBSK)',
         description: 'Free health screening and treatment for children 0-18 years. Covers 4Ds: Defects, Diseases, Deficiencies, Development delays.',
         match: (input, patient) => {
-            const age = parseInt(patient?.age || '0');
-            return age < 18 || /child|baby|bachcha|infant|newborn/i.test(input);
+            const age = parseInt(patient?.age || '99');
+            return age < 18 || /child|baby|bachcha|infant|newborn|बाळ|बच्चा|मूल/i.test(input);
         },
     },
     {
         name: 'Nikshay Poshan Yojana',
         description: 'Nutritional support of ₹500/month for TB patients during treatment duration.',
-        match: (input) => /tb|tuberculosis|tubercul/i.test(input),
+        match: (input, _patient, conditions) =>
+            /tb|tuberculosis|tubercul/i.test(input) ||
+            !!(conditions?.some(c => /tuberculosis|tb/i.test(c))),
     },
     {
         name: 'National Programme for Prevention and Control of Cancer, Diabetes, CVD and Stroke (NPCDCS)',
         description: 'Free screening and management of non-communicable diseases at district NCD clinics.',
-        match: (input) => /diabetes|sugar|heart|bp|blood pressure|cancer|stroke|hypertension/i.test(input),
+        match: (input, _patient, conditions) =>
+            /diabetes|sugar|heart|bp|blood pressure|cancer|stroke|hypertension|मधुमेह|रक्तदाब|शुगर/i.test(input) ||
+            !!(conditions?.some(c => /diabetes|hypertension|heart|stroke|cancer/i.test(c))),
     },
     {
         name: 'Rashtriya Swasthya Bima Yojana (RSBY)',
         description: 'Health insurance for BPL families covering hospitalization up to ₹30,000 per family per year.',
-        match: () => true,
+        match: (_input, _patient, _conditions, severity) =>
+            // Only for hospitalization-level cases
+            (severity || 0) >= 3,
     },
 ];
 
@@ -465,7 +475,7 @@ export function analyzeSymptoms(
             suggested_specialty: 'General Medicine',
             possible_conditions: ['Requires professional diagnosis'],
             recommended_action_summary: 'Home care with monitoring, visit PHC if needed',
-            eligible_schemes: HEALTH_SCHEMES.filter(s => s.match(normalizedInput, patient)).map(s => ({
+            eligible_schemes: HEALTH_SCHEMES.filter(s => s.match(combinedInput, patient, [], 1)).map(s => ({
                 name: s.name,
                 description: s.description,
             })),
@@ -520,9 +530,9 @@ export function analyzeSymptoms(
                 'has been factored into the assessment.'
         }`;
 
-    // Match schemes
+    // Match schemes based on actual conditions and severity
     const eligibleSchemes = HEALTH_SCHEMES
-        .filter(s => s.match(normalizedInput, patient))
+        .filter(s => s.match(combinedInput, patient, allConditions, maxSeverity))
         .map(s => ({ name: s.name, description: s.description }));
 
     return {
@@ -534,6 +544,6 @@ export function analyzeSymptoms(
         suggested_specialty: primarySpecialty,
         possible_conditions: allConditions.slice(0, 5),
         recommended_action_summary: actionSummary,
-        eligible_schemes: eligibleSchemes.slice(0, 4),
+        eligible_schemes: eligibleSchemes,
     };
 }

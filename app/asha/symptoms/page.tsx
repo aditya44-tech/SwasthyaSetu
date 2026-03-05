@@ -574,7 +574,7 @@ export default function SymptomAnalysis() {
                       )}
 
                       {/* Action Buttons */}
-                      <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Escalate button — for Medium risk (manual), hidden if already escalated or High/Critical (auto) */}
                         {result.triage_level === 'Medium' && !escalated && (
                           <button
