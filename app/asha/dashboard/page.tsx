@@ -27,9 +27,10 @@ export default function AshaDashboard() {
 
     const loadData = async () => {
       try {
-        const [alertsRes, patientsRes] = await Promise.all([
+        const [alertsRes, patientsRes, casesRes] = await Promise.all([
           fetch('/api/alerts'),
-          fetch('/api/patients')
+          fetch('/api/patients'),
+          fetch('/api/cases')
         ]);
 
         if (alertsRes.ok) {
@@ -37,20 +38,43 @@ export default function AshaDashboard() {
           setAlerts(alertsData.alerts || []);
         }
 
+        // Build a map of patient name -> status from escalated cases
+        const statusMap: Record<string, string> = {};
+        if (casesRes.ok) {
+          const casesData = await casesRes.json();
+          (casesData.cases || []).forEach((c: any) => {
+            const name = c.patient?.fullName;
+            if (name) {
+              const level = c.analysis?.triage_level;
+              if (c.status === 'resolved') {
+                statusMap[name] = 'recovered';
+              } else if (level === 'High' || level === 'Critical') {
+                statusMap[name] = 'needs_doctor';
+              } else {
+                statusMap[name] = 'monitoring';
+              }
+            }
+          });
+        }
+
         if (patientsRes.ok) {
           const patientsData = await patientsRes.json();
-          const formattedPatients = (patientsData.patients || []).map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            age: p.age,
-            gender: p.gender,
-            phoneNumber: p.phoneNumber,
-            address: p.address,
-            pregnancyStatus: p.pregnancyStatus,
-            condition: p.pregnancyStatus !== 'Not Pregnant' && p.pregnancyStatus ? p.pregnancyStatus : 'Routine Checkup',
-            status: 'normal',
-            date: p.date
-          }));
+          const formattedPatients = (patientsData.patients || []).map((p: any) => {
+            // Determine health status
+            let healthStatus = statusMap[p.name] || 'none';
+            return {
+              id: p.id,
+              name: p.name,
+              age: p.age,
+              gender: p.gender,
+              phoneNumber: p.phoneNumber,
+              address: p.address,
+              pregnancyStatus: p.pregnancyStatus,
+              condition: p.pregnancyStatus !== 'Not Pregnant' && p.pregnancyStatus ? p.pregnancyStatus : 'Routine Checkup',
+              healthStatus,
+              date: p.date
+            };
+          });
           setPatients(formattedPatients);
         }
       } catch (error) {
@@ -230,7 +254,27 @@ export default function AshaDashboard() {
                       <p className="text-sm text-[#86868B] mt-0.5">{patient.condition} • {patient.age} yrs</p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3">
+                    {patient.healthStatus === 'needs_doctor' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#FF3B30]/10 text-[#FF3B30]">
+                        🔴 Needs Doctor
+                      </span>
+                    )}
+                    {patient.healthStatus === 'monitoring' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#FF9500]/10 text-[#FF9500]">
+                        🟡 Monitoring
+                      </span>
+                    )}
+                    {patient.healthStatus === 'recovered' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#34C759]/10 text-[#34C759]">
+                        🟢 Recovered
+                      </span>
+                    )}
+                    {patient.healthStatus === 'none' && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/5 text-[#86868B]">
+                        ⚪ New
+                      </span>
+                    )}
                     <div className="hidden sm:block text-right">
                       <p className="text-sm font-medium text-[#1D1D1F]">{patient.date}</p>
                     </div>
