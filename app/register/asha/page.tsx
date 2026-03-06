@@ -27,7 +27,7 @@ export default function RegisterAshaPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, role: 'asha' }),
+        body: JSON.stringify({ ...formData, phoneNumber: `+91${formData.phoneNumber}`, role: 'asha' }),
       });
       const data = await res.json();
 
@@ -85,20 +85,26 @@ export default function RegisterAshaPage() {
                   placeholder="Full Name"
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  className="w-full pl-12 pr-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
+                  className="w-full pl-12 pr-5 py-4 bg-[#F5F5F7]/80 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
                   required
                 />
               </div>
 
-              <div className="relative">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#86868B]" />
+              <div className="relative flex items-center w-full bg-[#F5F5F7]/80 border border-white/40 rounded-2xl focus-within:ring-2 focus-within:ring-[#0071E3]/30 focus-within:bg-white transition-all">
+                <Phone className="absolute left-4 w-5 h-5 text-[#86868B]" />
+                <span className="pl-12 pr-2 text-[#1D1D1F] font-medium">+91</span>
                 <input
                   type="tel"
-                  placeholder="Phone Number"
+                  placeholder="Mobile Number"
                   value={formData.phoneNumber}
-                  onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                  className="w-full pl-12 pr-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '');
+                    if (val.length <= 10) setFormData({ ...formData, phoneNumber: val });
+                  }}
+                  className="w-full py-4 pr-5 bg-transparent focus:outline-none placeholder:text-[#86868B]"
                   required
+                  pattern="[0-9]{10}"
+                  title="Please enter exactly 10 digits"
                 />
               </div>
 
@@ -109,7 +115,7 @@ export default function RegisterAshaPage() {
                   placeholder="ASHA ID"
                   value={formData.ashaId}
                   onChange={(e) => setFormData({ ...formData, ashaId: e.target.value })}
-                  className="w-full pl-12 pr-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
+                  className="w-full pl-12 pr-5 py-4 bg-[#F5F5F7]/80 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
                   required
                 />
               </div>
@@ -121,7 +127,7 @@ export default function RegisterAshaPage() {
                   placeholder="Assigned Village/Area"
                   value={formData.area}
                   onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                  className="w-full pl-12 pr-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
+                  className="w-full pl-12 pr-5 py-4 bg-[#F5F5F7]/80 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
                   required
                 />
               </div>
@@ -133,7 +139,7 @@ export default function RegisterAshaPage() {
                   placeholder="Password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full pl-12 pr-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
+                  className="w-full pl-12 pr-5 py-4 bg-[#F5F5F7]/80 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all placeholder:text-[#86868B]"
                   required
                 />
               </div>

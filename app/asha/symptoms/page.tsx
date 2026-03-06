@@ -37,6 +37,10 @@ interface AnalysisResult {
     name: string;
     description: string;
   }[];
+  // New dynamic fields
+  age_group?: 'Child' | 'Adult' | 'Elderly' | 'Unknown';
+  pregnancy_status?: string;
+  parsed_symptoms?: { symptom: string; duration: string }[];
 }
 
 interface PatientData {
@@ -275,7 +279,7 @@ export default function SymptomAnalysis() {
   const getTriageColor = (level: TriageLevel) => {
     switch (level) {
       case 'Critical': return 'text-[#FF3B30] bg-[#FF3B30]/10 border-[#FF3B30]/20';
-      case 'High': return 'text-[#FF9500] bg-[#FF9500]/10 border-[#FF9500]/20';
+      case 'High': return 'text-[#FF3B30] bg-[#FF3B30]/10 border-[#FF3B30]/20';
       case 'Medium': return 'text-[#0071E3] bg-[#0071E3]/10 border-[#0071E3]/20';
       case 'Low': return 'text-[#34C759] bg-[#34C759]/10 border-[#34C759]/20';
       default: return 'text-[#86868B] bg-black/5 border-transparent';
@@ -428,28 +432,19 @@ export default function SymptomAnalysis() {
                     </div>
                   </div>
 
-                  {/* Possible Conditions & Specialty */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-[32px] p-6 apple-shadow border border-[#E5E5EA]/50">
-                      <div className="flex items-center mb-4">
-                        <ClipboardList className="w-5 h-5 text-[#0071E3] mr-2" />
-                        <h4 className="font-semibold">Possible Conditions</h4>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {result.possible_conditions.map((condition, i) => (
-                          <span key={i} className="px-3 py-1 bg-[#F5F5F7] text-[#1D1D1F] text-xs font-medium rounded-full border border-black/5">
-                            {condition}
-                          </span>
-                        ))}
-                      </div>
+
+                  {/* Possible Conditions */}
+                  <div className="bg-white rounded-[32px] p-6 apple-shadow border border-[#E5E5EA]/50">
+                    <div className="flex items-center mb-4">
+                      <ClipboardList className="w-5 h-5 text-[#0071E3] mr-2" />
+                      <h4 className="font-semibold">Possible Conditions</h4>
                     </div>
-                    <div className="bg-white rounded-[32px] p-6 apple-shadow border border-[#E5E5EA]/50">
-                      <div className="flex items-center mb-4">
-                        <Stethoscope className="w-5 h-5 text-[#34C759] mr-2" />
-                        <h4 className="font-semibold">Suggested Specialty</h4>
-                      </div>
-                      <p className="text-sm text-[#1D1D1F] font-medium">{result.suggested_specialty}</p>
-                      <p className="text-xs text-[#86868B] mt-1">Consultation recommended with this department.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {result.possible_conditions.map((condition, i) => (
+                        <span key={i} className="px-3 py-1 bg-[#F5F5F7] text-[#1D1D1F] text-xs font-medium rounded-full border border-black/5">
+                          {condition}
+                        </span>
+                      ))}
                     </div>
                   </div>
 
@@ -597,16 +592,7 @@ export default function SymptomAnalysis() {
                           </button>
                         )}
 
-                        {/* View Doctor Dashboard — for High/Critical */}
-                        {(result.triage_level === 'High' || result.triage_level === 'Critical') && (
-                          <button
-                            onClick={() => window.open('/doctor/dashboard', '_blank')}
-                            className="flex-1 bg-[#FF3B30] text-white py-4 rounded-2xl font-medium hover:bg-[#E63529] transition-all flex items-center justify-center shadow-lg shadow-red-500/20"
-                          >
-                            <ArrowRight className="w-5 h-5 mr-2" />
-                            View Doctor Dashboard
-                          </button>
-                        )}
+
 
                         {/* New Analysis — always visible */}
                         <button

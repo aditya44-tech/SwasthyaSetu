@@ -22,7 +22,7 @@ export default function LoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, password, role }),
+        body: JSON.stringify({ phone: `+91${phone}`, password, role }),
       });
       const data = await res.json();
 
@@ -78,20 +78,28 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="w-full space-y-5">
             <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Phone Number or ID"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all duration-300 placeholder:text-[#86868B]"
-                required
-              />
+              <div className="relative flex items-center w-full bg-[#F5F5F7]/80 border border-white/40 rounded-2xl focus-within:ring-2 focus-within:ring-[#0071E3]/30 focus-within:bg-white transition-all duration-300">
+                <span className="pl-5 pr-2 text-[#1D1D1F] font-medium">+91</span>
+                <input
+                  type="tel"
+                  placeholder="Mobile Number"
+                  value={phone}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, ''); // Allow only digits
+                    if (val.length <= 10) setPhone(val);
+                  }}
+                  className="w-full py-4 pr-5 bg-transparent focus:outline-none placeholder:text-[#86868B]"
+                  required
+                  pattern="[0-9]{10}"
+                  title="Please enter exactly 10 digits"
+                />
+              </div>
               <input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-5 py-4 bg-white/50 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all duration-300 placeholder:text-[#86868B]"
+                className="w-full px-5 py-4 bg-[#F5F5F7]/80 border border-white/40 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#0071E3]/30 focus:bg-white transition-all duration-300 placeholder:text-[#86868B]"
                 required
               />
             </div>

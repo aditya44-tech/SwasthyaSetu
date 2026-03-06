@@ -20,6 +20,9 @@ export interface IEscalatedCase extends Document {
         possible_conditions: string[];
         recommended_action_summary: string;
         eligible_schemes: { name: string; description: string }[];
+        age_group?: string;
+        pregnancy_status?: string;
+        parsed_symptoms?: { symptom: string; duration: string }[];
     };
     status: 'pending' | 'resolving' | 'resolved';
     escalatedAt: Date;
@@ -47,6 +50,12 @@ const EscalatedCaseSchema: Schema = new Schema({
         eligible_schemes: [{
             name: { type: String },
             description: { type: String }
+        }],
+        age_group: { type: String },
+        pregnancy_status: { type: String },
+        parsed_symptoms: [{
+            symptom: { type: String },
+            duration: { type: String }
         }],
     },
     status: { type: String, enum: ['pending', 'resolving', 'resolved'], default: 'pending' },

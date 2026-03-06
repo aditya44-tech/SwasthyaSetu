@@ -12,6 +12,10 @@ export interface AnalysisResult {
     possible_conditions: string[];
     recommended_action_summary: string;
     eligible_schemes: { name: string; description: string }[];
+    // New fields for dynamic risk assessment
+    age_group?: 'Child' | 'Adult' | 'Elderly' | 'Unknown';
+    pregnancy_status?: string;
+    parsed_symptoms?: { symptom: string; duration: string }[];
 }
 
 // ── Keyword mappings (English + Hindi/regional transliterations) ──
@@ -425,20 +429,60 @@ export function analyzeSymptoms(
 
     // Parse patient context
     const patient: { age?: string; gender?: string; pregnancyStatus?: string } = {};
+    let ageGroup: 'Child' | 'Adult' | 'Elderly' | 'Unknown' = 'Unknown';
+    let ageNum = 30; // Default Adult
+
     if (patientContext) {
         const ageMatch = patientContext.match(/Age:\s*(\d+)/i);
         const genderMatch = patientContext.match(/Gender:\s*(\w+)/i);
-        const pregMatch = patientContext.match(/Pregnancy Status:\s*(\w+)/i);
-        if (ageMatch) patient.age = ageMatch[1];
+        const pregMatch = patientContext.match(/Pregnancy Status:\s*([^,.]+)/i); // Stop at comma/period
+
+        if (ageMatch) {
+            patient.age = ageMatch[1];
+            ageNum = parseInt(patient.age);
+            if (ageNum <= 12) ageGroup = 'Child';
+            else if (ageNum >= 60) ageGroup = 'Elderly';
+            else ageGroup = 'Adult';
+        }
         if (genderMatch) patient.gender = genderMatch[1];
-        if (pregMatch) patient.pregnancyStatus = pregMatch[1];
+        if (pregMatch) patient.pregnancyStatus = pregMatch[1].trim();
     }
 
-    // Determine severity modifiers from input
-    let severityBoost = 0;
-    if (/3 day|three day|teen din|4 day|four day|5 day|panch din|hafte|week/i.test(normalizedInput)) {
-        severityBoost += 0.5; // Duration slightly increases severity
+    // Identify pregnancy status boolean
+    const isPregnant = !!(
+        (patient.pregnancyStatus && patient.pregnancyStatus.toLowerCase() !== 'not pregnant' && patient.pregnancyStatus.toLowerCase() !== 'none') ||
+        /pregnan|garbh|pet se|गरोदर|गर्भवती/i.test(normalizedInput)
+    );
+
+    // Extract duration in days
+    // Matches: "for X days", "X din se", "since X days", "X days"
+    let parsedDurationInDays = 0;
+    const durationMatch = normalizedInput.match(/(\d+)\s*(din|day|days)/i);
+    const textNumberMatch = normalizedInput.match(/(one|two|three|four|five|six|seven|eight|nine|ten)\s*(din|day|days)/i);
+    const hindiWordsMap: Record<string, number> = { 'ek': 1, 'do': 2, 'teen': 3, 'char': 4, 'chaar': 4, 'paanch': 5, 'panch': 5, 'chhe': 6, 'saat': 7 };
+    const textHindiMatch = normalizedInput.match(/(ek|do|teen|char|chaar|paanch|panch|chhe|saat)\s*(din)/i);
+
+    if (durationMatch) {
+        parsedDurationInDays = parseInt(durationMatch[1]);
+    } else if (textNumberMatch) {
+        const textToNum: Record<string, number> = { 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10 };
+        parsedDurationInDays = textToNum[textNumberMatch[1].toLowerCase()] || 0;
+    } else if (textHindiMatch) {
+        parsedDurationInDays = hindiWordsMap[textHindiMatch[1].toLowerCase()] || 0;
+    } else if (/hafte|week|7 days/i.test(normalizedInput)) {
+        parsedDurationInDays = 7;
+    } else if (/mahine|month/i.test(normalizedInput)) {
+        parsedDurationInDays = 30;
+    } else if (/kal se|yesterday/i.test(normalizedInput)) {
+        parsedDurationInDays = 1;
     }
+
+    const durationText = parsedDurationInDays > 0 ? `${parsedDurationInDays} day(s)` : 'Not specified';
+
+    // Determine severity modifiers from input (legacy modifier fallback)
+    let severityBoost = 0;
+    if (parsedDurationInDays >= 3 && parsedDurationInDays < 7) severityBoost += 0.5;
+    if (parsedDurationInDays >= 7) severityBoost += 1;
     if (/bahut|very severe|extreme|unbearable|bardasht nahi|bahut zyada/i.test(normalizedInput)) {
         severityBoost += 1; // Only strong severity keywords boost
     } else if (/severe|tez|bahut|very/i.test(normalizedInput)) {
@@ -454,10 +498,8 @@ export function analyzeSymptoms(
         severityBoost += 1; // Bleeding is always concerning
     }
 
-    // Age-based severity — only for very young or very old
-    const ageNum = parseInt(patient.age || '30');
-    if (ageNum < 2) severityBoost += 1;
-    else if (ageNum > 75) severityBoost += 0.5;
+    if (ageGroup === 'Child') severityBoost += 0.5;
+    else if (ageGroup === 'Elderly') severityBoost += 0.5;
 
     // If no symptoms matched, provide a generic LOW response
     if (matchedSymptoms.length === 0) {
@@ -479,19 +521,86 @@ export function analyzeSymptoms(
                 name: s.name,
                 description: s.description,
             })),
+            age_group: ageGroup,
+            pregnancy_status: isPregnant ? 'Pregnant' : 'Not Pregnant',
+            parsed_symptoms: [],
         };
     }
 
-    // Aggregate results from all matched symptoms
-    // Cap the boost at +1 max — prevents normal symptoms from jumping to High/Critical
+    // Base severity calculation
     const effectiveBoost = Math.min(Math.floor(severityBoost), 1);
-    const maxSeverity = Math.min(
+    let maxSeverity = Math.min(
         4,
         Math.max(...matchedSymptoms.map(s => s.severity)) + effectiveBoost
     );
 
+    const isSymptomMatch = (keywords: string[]) =>
+        keywords.some(kw => matchedSymptoms.some(ms => ms.keywords.includes(kw)));
+
+    let triageLevel: TriageLevel = 'Low';
+    let dynamicRecommendation = 'Home care with monitoring';
+
+    // ── DYNAMIC RISK ASSESMENT OVERRIDES ──
+    if (isPregnant) {
+        if (isSymptomMatch(['fever', 'bukhar'])) {
+            maxSeverity = parsedDurationInDays > 2 ? 3 : 2; // High if >2, Medium if 1-2
+        }
+        if (isSymptomMatch(['stomach pain', 'pet dard'])) maxSeverity = Math.max(maxSeverity, 3); // Immediate High
+        if (isSymptomMatch(['blood', 'bleeding', 'khoon'])) {
+            maxSeverity = 4; // Immediate Critical (High)
+            dynamicRecommendation = 'Emergency doctor consultation immediately';
+        }
+        if (isSymptomMatch(['swelling'])) maxSeverity = Math.max(maxSeverity, 2); // Medium
+        if (isSymptomMatch(['headache', 'dizziness', 'blur'])) maxSeverity = Math.max(maxSeverity, 3); // High (preeclampsia)
+        if (isSymptomMatch(['fetal movement', 'baby moving'])) maxSeverity = Math.max(maxSeverity, 3); // High
+    } else if (ageGroup === 'Elderly') {
+        if (isSymptomMatch(['fever', 'bukhar'])) {
+            maxSeverity = parsedDurationInDays > 3 ? 3 : 2; // High if >3, Medium if 1-2
+        }
+        if (isSymptomMatch(['chest pain', 'seene mein dard'])) {
+            maxSeverity = 4; // Immediate High/Critical
+            dynamicRecommendation = 'Urgent doctor consultation immediately';
+        }
+        if (isSymptomMatch(['breathless', 'saans'])) maxSeverity = Math.max(maxSeverity, 3); // Immediate High
+        if (isSymptomMatch(['weakness', 'chakkar'])) maxSeverity = Math.max(maxSeverity, 2); // Medium (Dehydration)
+        if (isSymptomMatch(['cough', 'khansi'])) {
+            if (parsedDurationInDays > 5) maxSeverity = Math.max(maxSeverity, 3); // High
+            else if (parsedDurationInDays >= 3) maxSeverity = Math.max(maxSeverity, 2); // Medium
+        }
+        if (isSymptomMatch(['confusion', 'mental'])) maxSeverity = Math.max(maxSeverity, 3); // Immediate High
+    } else if (ageGroup === 'Child') {
+        if (isSymptomMatch(['fever', 'bukhar'])) {
+            if (isSymptomMatch(['tez', 'high', 'severe'])) maxSeverity = Math.max(maxSeverity, 3); // High if tez bukhar
+            else if (parsedDurationInDays > 3) maxSeverity = Math.max(maxSeverity, 3); // High
+            else if (parsedDurationInDays > 1) maxSeverity = Math.max(maxSeverity, 2); // Medium
+            else maxSeverity = Math.max(maxSeverity, 1); // Low
+        }
+        if (isSymptomMatch(['vomiting', 'diarrhea', 'ulti', 'dast'])) {
+            maxSeverity = parsedDurationInDays > 2 ? 3 : 2; // High if > 2, else Medium
+        }
+        if (isSymptomMatch(['breathless', 'saans'])) maxSeverity = Math.max(maxSeverity, 3); // Immediate High
+        if (isSymptomMatch(['cough', 'khansi'])) {
+            if (parsedDurationInDays > 5) maxSeverity = Math.max(maxSeverity, 3); // High
+            else if (parsedDurationInDays >= 3) maxSeverity = Math.max(maxSeverity, 2); // Medium
+        }
+        if (isSymptomMatch(['weakness', 'not feeding', 'doodh nahi'])) {
+            maxSeverity = parsedDurationInDays > 2 ? 3 : 2; // High if > 2, else Medium
+        }
+    } else {
+        // Adult rules
+        if (isSymptomMatch(['fever', 'bukhar'])) {
+            if (parsedDurationInDays > 7) {
+                maxSeverity = Math.max(maxSeverity, 3); // High
+                dynamicRecommendation = 'Suggest doctor consultation immediately';
+            }
+            else if (parsedDurationInDays >= 4) maxSeverity = Math.max(maxSeverity, 2); // Medium
+            else maxSeverity = Math.max(maxSeverity, 1); // Low
+        }
+    }
+
+    // Map numeric severity back to Enum
     const triageLevels: TriageLevel[] = ['Low', 'Medium', 'High', 'Critical'];
-    const triageLevel = triageLevels[maxSeverity - 1];
+    triageLevel = triageLevels[Math.min(maxSeverity, 4) - 1] || 'Low';
 
     const allConditions = [...new Set(matchedSymptoms.flatMap(s => s.conditions))];
     const allRiskFactors = [...new Set(matchedSymptoms.flatMap(s => s.riskFactors))];
@@ -500,27 +609,28 @@ export function analyzeSymptoms(
 
     // Build English summary
     const symptomNames = matchedSymptoms.map(s => s.keywords[0]).join(', ');
-    const cleanSummary = `Patient presents with: ${symptomNames}. ${patientContext || ''} ${severityBoost > 0 ? 'Severity factors detected (duration/intensity/vulnerable population).' : ''
-        }`.trim();
+    const cleanSummary = `Patient presents with: ${symptomNames}. ${patientContext || ''} ${severityBoost > 0 ? 'Severity factors detected.' : ''}`.trim();
 
-    // Determine action summary
-    let actionSummary: string;
-    switch (triageLevel) {
-        case 'Critical':
-            actionSummary = 'EMERGENCY: Immediate hospital referral';
-            break;
-        case 'High':
-            actionSummary = 'Urgent: Refer to hospital within 24 hours';
-            break;
-        case 'Medium':
-            actionSummary = 'Visit PHC within 2-3 days';
-            break;
-        default:
-            actionSummary = 'Home care with monitoring';
+    // Determine action summary if dynamic hasn't overriden it
+    let actionSummary = dynamicRecommendation;
+    if (actionSummary === 'Home care with monitoring') {
+        switch (triageLevel) {
+            case 'Critical':
+                actionSummary = 'EMERGENCY: Immediate hospital referral';
+                break;
+            case 'High':
+                actionSummary = 'Urgent: Refer to hospital within 24 hours';
+                break;
+            case 'Medium':
+                actionSummary = 'Visit PHC within 2-3 days';
+                break;
+            default:
+                actionSummary = 'Home care with monitoring';
+        }
     }
 
     // Build clinical analysis
-    const analysis = `Based on the reported symptoms (${symptomNames}), the patient shows signs consistent with ${allConditions.slice(0, 3).join(', ')
+    const analysis = `Based on the reported symptoms (${symptomNames}) for ${durationText}, the patient shows signs consistent with ${allConditions.slice(0, 3).join(', ')
         }. ${triageLevel === 'Critical' || triageLevel === 'High'
             ? 'This is a potentially serious condition requiring urgent medical attention.'
             : 'The condition appears manageable with appropriate care and monitoring.'
@@ -545,5 +655,8 @@ export function analyzeSymptoms(
         possible_conditions: allConditions.slice(0, 5),
         recommended_action_summary: actionSummary,
         eligible_schemes: eligibleSchemes,
+        age_group: ageGroup,
+        pregnancy_status: isPregnant ? 'Pregnant' : 'Not Pregnant',
+        parsed_symptoms: matchedSymptoms.map(s => ({ symptom: s.keywords[0], duration: durationText }))
     };
 }
