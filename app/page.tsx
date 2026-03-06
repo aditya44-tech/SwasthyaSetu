@@ -46,7 +46,7 @@ export default function LandingPage() {
             transition={{ duration: 0.5 }}
             className="mb-6"
           >
-            <span className="px-3 py-1 rounded-full border border-[#0071E3]/30 bg-[#0071E3]/5 text-[#0071E3] text-[10px] font-bold uppercase tracking-widest">
+            <span className="px-3 py-1 rounded-full border border-[#34C759]/30 bg-[#34C759]/5 text-[#34C759] text-[10px] font-bold uppercase tracking-widest">
               New Standard
             </span>
           </motion.div>
