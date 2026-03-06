@@ -7,6 +7,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function () {
                 navigator.serviceWorker.register('/sw.js').then(
