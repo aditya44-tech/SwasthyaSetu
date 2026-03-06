@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import AshaWorker from '@/models/AshaWorker';
+import Doctor from '@/models/Doctor';
 
 export async function POST(req: NextRequest) {
     try {
@@ -8,17 +9,31 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { role, ...userData } = body;
 
-        const newUser = await User.create({
-            name: userData.fullName,
-            role,
-            contact: userData.phoneNumber,
-            location: role === 'asha' ? userData.area : userData.hospital,
-            password: userData.password,
-            ashaId: userData.ashaId,
-            licenseNumber: userData.licenseNumber,
-            specialization: userData.specialization,
-            hospital: userData.hospital,
-        });
+        let newUser;
+
+        if (role === 'asha') {
+            newUser = await AshaWorker.create({
+                name: userData.fullName,
+                role: 'asha',
+                contact: userData.phoneNumber,
+                location: userData.area,
+                password: userData.password,
+                ashaId: userData.ashaId,
+            });
+        } else if (role === 'doctor') {
+            newUser = await Doctor.create({
+                name: userData.fullName,
+                role: 'doctor',
+                contact: userData.phoneNumber,
+                location: userData.hospital,
+                password: userData.password,
+                licenseNumber: userData.licenseNumber,
+                specialization: userData.specialization,
+                hospital: userData.hospital,
+            });
+        } else {
+            return NextResponse.json({ success: false, error: 'Invalid role' }, { status: 400 });
+        }
 
         return NextResponse.json({
             success: true,
@@ -28,9 +43,9 @@ export async function POST(req: NextRequest) {
                 role: newUser.role,
                 contact: newUser.contact,
                 location: newUser.location,
-                ashaId: newUser.ashaId,
-                specialization: newUser.specialization,
-                hospital: newUser.hospital,
+                ashaId: (newUser as any).ashaId,
+                specialization: (newUser as any).specialization,
+                hospital: (newUser as any).hospital,
             }
         }, { status: 201 });
     } catch (error: any) {

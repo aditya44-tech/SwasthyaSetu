@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import AshaWorker from '@/models/AshaWorker';
+import Doctor from '@/models/Doctor';
 
 export async function POST(req: NextRequest) {
     try {
@@ -8,8 +9,10 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { phone, password, role } = body;
 
-        // Find user by contact and role
-        const user = await User.findOne({ contact: phone, role });
+        // Find user in the correct collection based on role
+        const user = role === 'asha'
+            ? await AshaWorker.findOne({ contact: phone })
+            : await Doctor.findOne({ contact: phone });
 
         if (!user) {
             return NextResponse.json({ success: false, error: 'User not found. Please register first.' }, { status: 404 });
@@ -28,9 +31,9 @@ export async function POST(req: NextRequest) {
                 role: user.role,
                 contact: user.contact,
                 location: user.location,
-                ashaId: user.ashaId,
-                specialization: user.specialization,
-                hospital: user.hospital,
+                ashaId: (user as any).ashaId,
+                specialization: (user as any).specialization,
+                hospital: (user as any).hospital,
             }
         });
     } catch (error: any) {

@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import AshaWorker from '@/models/AshaWorker';
 
 export async function GET() {
     try {
         await dbConnect();
-        const ashaWorker = await User.findOne({ role: 'asha' });
+        const ashaWorker = await AshaWorker.findOne();
 
         if (!ashaWorker) {
             return NextResponse.json({ success: false, error: 'ASHA worker not found' }, { status: 404 });

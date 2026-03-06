@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import Doctor from '@/models/Doctor';
 
 export async function GET() {
     try {
         await dbConnect();
-        const doctor = await User.findOne({ role: 'doctor' });
+        const doctor = await Doctor.findOne();
 
         if (!doctor) {
             return NextResponse.json({ success: false, error: 'Doctor not found' }, { status: 404 });

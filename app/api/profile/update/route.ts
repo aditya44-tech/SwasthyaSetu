@@ -1,22 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import User from '@/models/User';
+import AshaWorker from '@/models/AshaWorker';
+import Doctor from '@/models/Doctor';
 
 export async function PATCH(req: NextRequest) {
     try {
         await dbConnect();
         const body = await req.json();
-        const { userId, name, contact, location } = body;
+        const { userId, role, name, contact, location } = body;
 
         if (!userId) {
             return NextResponse.json({ success: false, error: 'User ID required' }, { status: 400 });
         }
 
-        const updated = await User.findByIdAndUpdate(
-            userId,
-            { $set: { name, contact, location } },
-            { new: true }
-        );
+        let updated;
+        if (role === 'doctor') {
+            updated = await Doctor.findByIdAndUpdate(
+                userId,
+                { $set: { name, contact, location } },
+                { new: true }
+            );
+        } else {
+            updated = await AshaWorker.findByIdAndUpdate(
+                userId,
+                { $set: { name, contact, location } },
+                { new: true }
+            );
+        }
 
         if (!updated) {
             return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
