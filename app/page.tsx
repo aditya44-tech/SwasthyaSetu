@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import { HeartPulse, ArrowRight, Menu, Activity, Shield, Wifi, Video } from 'lucide-react';
+import { HeartPulse, ArrowRight, Menu, Activity, Shield, ShieldCheck, Video } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -141,7 +141,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
 
-          {/* Card 4: Offline Mode */}
+          {/* Card 4: Health Schemes */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -151,10 +151,10 @@ export default function LandingPage() {
           >
             <div className="relative z-10">
               <div className="w-16 h-16 bg-[#FF9500]/10 rounded-2xl flex items-center justify-center mb-6">
-                <Wifi className="w-8 h-8 text-[#FF9500]" />
+                <ShieldCheck className="w-8 h-8 text-[#FF9500]" />
               </div>
-              <h3 className="text-3xl font-semibold text-[#1D1D1F] mb-4">Offline First</h3>
-              <p className="text-lg text-[#86868B]">No internet? No problem. Full diagnosis works completely offline.</p>
+              <h3 className="text-3xl font-semibold text-[#1D1D1F] mb-4">Eligible Health Schemes</h3>
+              <p className="text-lg text-[#86868B]">AI matches patients with eligible government health schemes instantly.</p>
             </div>
           </motion.div>
 

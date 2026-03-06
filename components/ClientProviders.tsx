@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import NetworkStatus from './NetworkStatus';
+
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
     const [mounted, setMounted] = useState(false);
@@ -24,7 +24,6 @@ export default function ClientProviders({ children }: { children: React.ReactNod
     return (
         <>
             {children}
-            {mounted && <NetworkStatus />}
         </>
     );
 }
