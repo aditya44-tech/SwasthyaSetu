@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
-import { MapPin, Phone, User, ChevronLeft, Loader2, Calendar, Heart, Activity, AlertTriangle, Shield, Stethoscope, FileText, Clock, ChevronDown, ChevronUp, Video, Pill, ClipboardList } from 'lucide-react';
+import { MapPin, Phone, User, ChevronLeft, Loader2, Calendar, Heart, Activity, AlertTriangle, Shield, Stethoscope, FileText, Clock, ChevronDown, ChevronUp, Video, Pill, ClipboardList, Trash2 } from 'lucide-react';
 import DefaultAvatar from '@/components/DefaultAvatar';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { removeCachedPatient } from '@/lib/offlineDB';
 
 interface PatientProfile {
     id: string;
@@ -65,6 +66,52 @@ function PatientProfileContent() {
     const [updatingStatus, setUpdatingStatus] = useState(false);
     const [activeCall, setActiveCall] = useState<{ roomName: string } | null>(null);
     const [consultations, setConsultations] = useState<ConsultationData[]>([]);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDeletePatient = async () => {
+        if (!profile || isDeleting) return;
+
+        const confirmDelete = window.confirm(`Are you sure you want to delete the patient "${profile.fullName}"? This action cannot be undone.`);
+        if (!confirmDelete) return;
+
+        setIsDeleting(true);
+        try {
+            const res = await fetch(`/api/patients/${profile.id}`, {
+                method: 'DELETE',
+            });
+
+            if (res.ok) {
+                // Instantly remove from local offline cache
+                await removeCachedPatient(profile.id);
+
+                // Clear the current active patient from local storage if matches
+                const saved = localStorage.getItem('currentPatient');
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        if (parsed.id === profile.id) {
+                            localStorage.removeItem('currentPatient');
+                        }
+                    } catch { /* ignore */ }
+                }
+
+                // Redirect appropriately
+                if (ashaName) {
+                    router.replace('/asha/dashboard');
+                } else {
+                    router.replace('/doctor/dashboard'); // default fallback
+                }
+            } else {
+                const data = await res.json();
+                alert(`Failed to delete patient: ${data.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error deleting patient:', error);
+            alert('An error occurred while deleting the patient.');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     const handleStatusChange = async (newStatus: string) => {
         if (!healthData?.caseId || updatingStatus) return;
@@ -384,8 +431,8 @@ function PatientProfileContent() {
                                         </div>
                                         {cons.patientStatus && (
                                             <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${cons.patientStatus === 'Recovered' ? 'bg-[#34C759]/10 text-[#34C759]' :
-                                                    cons.patientStatus === 'Needs Follow-up' ? 'bg-[#FF9500]/10 text-[#FF9500]' :
-                                                        'bg-[#0071E3]/10 text-[#0071E3]'
+                                                cons.patientStatus === 'Needs Follow-up' ? 'bg-[#FF9500]/10 text-[#FF9500]' :
+                                                    'bg-[#0071E3]/10 text-[#0071E3]'
                                                 }`}>
                                                 {cons.patientStatus}
                                             </span>
@@ -401,9 +448,9 @@ function PatientProfileContent() {
                                             <div className="flex-1">
                                                 <p className="text-xs text-[#86868B] mb-0.5">Updated Risk Level</p>
                                                 <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold ${cons.riskLevel === 'Critical' ? 'bg-[#FF3B30]/10 text-[#FF3B30]' :
-                                                        cons.riskLevel === 'High' ? 'bg-[#FF3B30]/10 text-[#FF3B30]' :
-                                                            cons.riskLevel === 'Medium' ? 'bg-[#FF9500]/10 text-[#FF9500]' :
-                                                                'bg-[#34C759]/10 text-[#34C759]'
+                                                    cons.riskLevel === 'High' ? 'bg-[#FF3B30]/10 text-[#FF3B30]' :
+                                                        cons.riskLevel === 'Medium' ? 'bg-[#FF9500]/10 text-[#FF9500]' :
+                                                            'bg-[#34C759]/10 text-[#34C759]'
                                                     }`}>
                                                     {cons.riskLevel} Risk
                                                 </span>
@@ -738,7 +785,7 @@ function PatientProfileContent() {
                 >
                     <button
                         onClick={() => router.push('/asha/symptoms')}
-                        className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#F5F5F7]/50 transition-colors"
+                        className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#F5F5F7]/50 transition-colors border-b border-[#E5E5EA]/50"
                     >
                         <div className="flex items-center">
                             <div className="w-8 h-8 rounded-full bg-[#0071E3]/10 flex items-center justify-center mr-4">
@@ -747,6 +794,26 @@ function PatientProfileContent() {
                             <span className="text-sm font-medium text-[#1D1D1F]">Run New Symptom Analysis</span>
                         </div>
                         <ChevronLeft className="w-5 h-5 text-[#C7C7CC] rotate-180" />
+                    </button>
+
+                    <button
+                        onClick={handleDeletePatient}
+                        disabled={isDeleting}
+                        className="w-full p-4 sm:p-5 flex items-center justify-between hover:bg-[#FFF2F2] transition-colors"
+                    >
+                        <div className="flex items-center items-center">
+                            <div className="w-8 h-8 rounded-full bg-[#FF3B30]/10 flex items-center justify-center mr-4">
+                                {isDeleting ? (
+                                    <Loader2 className="w-4 h-4 text-[#FF3B30] animate-spin" />
+                                ) : (
+                                    <Trash2 className="w-4 h-4 text-[#FF3B30]" />
+                                )}
+                            </div>
+                            <span className="text-sm font-medium text-[#FF3B30]">
+                                {isDeleting ? 'Deleting Patient...' : 'Delete Patient'}
+                            </span>
+                        </div>
+                        <ChevronLeft className="w-5 h-5 text-[#FF3B30] rotate-180 opacity-50" />
                     </button>
                 </motion.div>
             </main>

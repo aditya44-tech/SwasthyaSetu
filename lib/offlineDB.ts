@@ -86,6 +86,16 @@ export async function getCachedPatients(): Promise<any[]> {
     });
 }
 
+export async function removeCachedPatient(id: string): Promise<void> {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction('cachedPatients', 'readwrite');
+        tx.objectStore('cachedPatients').delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+    });
+}
+
 // ── Cache cases locally ──
 export async function cacheCases(cases: any[]): Promise<void> {
     const db = await openDB();
