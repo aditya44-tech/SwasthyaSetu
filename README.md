@@ -15,20 +15,16 @@
    - **Low/Medium Risk**: Automatic home monitoring protocol generation for ASHA workers.
    - **High/Critical Risk**: Automatic rapid escalation routing critical cases directly to the nearest Doctor’s Dashboard for immediate intervention.
 
-3. **📴 Offline-First Architecture**
-   - Built to handle volatile rural internet connectivity.
-   - Offline form submissions cached in **IndexedDB** (`offlineDB.ts`).
-   - Background-sync pushes queued actions (patient registrations, symptom logs) to MongoDB automatically once the device restores connection.
 
-4. **📝 Health Schemes Matcher**
+3. **📝 Health Schemes Matcher**
    - Evaluates patient profile and symptoms against government health policies.
    - Outputs instant eligibility alerts (e.g., JSY for pregnant women, NTEP for prolonged TB-like coughs).
 
-5. **🏥 Two Dedicated Portals**
+4. **🏥 Two Dedicated Portals**
    - **ASHA Dashboard (`/asha`)**: Mobile-first, action-friendly UI designed for rapid patient intake, simple language input, and offline tracking.
    - **Doctor Dashboard (`/doctor`)**: Clinical command center highlighting high-priority escalated cases and full patient medical history timelines.
 
-6. **📞 Teleconsultation Integrated**
+5. **📞 Teleconsultation Integrated**
    - Instant video-conferencing UI built for optimal performance on low-bandwidth rural networks.
 
 ---
